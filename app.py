@@ -20,6 +20,24 @@ if database_url.startswith("postgres://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
+with app.app_context():
+    db.create_all()
+    # Create admin if not exists
+    from models import User
+    try:
+        admin = User.query.filter_by(role="admin").first()
+        if not admin:
+            admin = User(
+                name="Admin",
+                email="admin@medintel.com",
+                role="admin",
+                specialization="General Physician"
+            )
+            admin.set_password("admin123")
+            db.session.add(admin)
+            db.session.commit()
+    except:
+        pass
 
 # ─── ML Model Training ────────────────────────────────────────────────────────
 
