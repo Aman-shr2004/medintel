@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--muted); text-decoration: none;
+  font-size: 13px; font-weight: 600;
+  transition: color .15s; margin-bottom: 20px;
+}
+.back-link:hover { color: var(--teal); }
+
+.rx-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px; align-items: start;
+}
+
+/* ── Prescription Card ── */
+.rx-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px; overflow: hidden;
+}
+
+.rx-banner {
+  background: linear-gradient(135deg, #0f766e, #0d9488, #14b8a6);
+  padding: 22px 28px;
+  display: flex; align-items: center; gap: 16px;
+  position: relative; overflow: hidden;
+}
+
+.rx-banner::before {
+  content: '💊';
+  position: absolute; right: 24px; bottom: -10px;
+  font-size: 80px; opacity: .15;
+}
+
+.rx-banner-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px; font-weight: 700; color: #fff;
+}
+
+.rx-banner-sub { font-size: 13px; color: rgba(255,255,255,.75); margin-top: 3px; }
+
+.rx-body { padding: 28px; }
+
+/* Section labels */
+.rx-section-label {
+  font-size: 12px; font-weight: 700;
+  color: var(--text); text-transform: uppercase;
+  letter-spacing: .6px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.rx-section-label::after {
+  content: '';
+  flex: 1; height: 1px; background: var(--border);
+}
+
+/* Quick medicine chips */
+.quick-meds {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 20px;
+}
+
+.qm-btn {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface); font-size: 12px;
+  font-weight: 600; color: var(--teal-dark);
+  cursor: pointer; width: auto; transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.qm-btn:hover {
+  background: var(--teal-pale);
+  border-color: var(--teal);
+  transform: translateY(-1px);
+}
+
+/* Textarea */
+.rx-textarea {
+  width: 100%; padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px; font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text); background: var(--surface);
+  resize: vertical; line-height: 1.6;
+  transition: border-color .15s; margin: 0;
+}
+
+.rx-textarea:focus {
+  outline: none; border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,148,136,.1);
+}
+
+.rx-char-count {
+  font-size: 11px; color: var(--muted);
+  text-align: right; margin-top: 4px;
+  margin-bottom: 20px;
+}
+
+/* Template buttons */
+.template-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 20px;
+}
+
+.template-btn {
+  padding: 10px 12px; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface); font-size: 12px;
+  font-weight: 600; color: var(--text);
+  cursor: pointer; width: auto;
+  text-align: left; transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.template-btn:hover {
+  background: var(--teal-pale);
+  border-color: var(--teal); color: var(--teal-dark);
+}
+
+/* Submit area */
+.rx-submit-area {
+  display: flex; gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+/* ── Right sidebar ── */
+.right-col { display: flex; flex-direction: column; gap: 16px; }
+
+.side-sec {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+
+.side-sec-hdr {
+  padding: 13px 18px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.side-sec-body { padding: 16px; }
+
+/* Patient info rows */
+.pi-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px; border-radius: 9px;
+  background: var(--bg); margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.pi-row:last-child { margin-bottom: 0; }
+.pi-label { color: var(--muted); }
+.pi-val   { font-weight: 700; color: var(--text); }
+
+/* Past prescription mini */
+.past-rx-item {
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 10px;
+  border-left: 3px solid var(--teal);
+  margin-bottom: 10px;
+}
+
+.past-rx-item:last-child { margin-bottom: 0; }
+.past-rx-date { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.past-rx-meds { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4; }
+
+@media (max-width:900px) {
+  .rx-layout { grid-template-columns: 1fr; }
+  .template-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<a href="/doctor/patient/{{ patient.id }}" class="back-link">← Back to Patient</a>
+
+<h2 style="margin-bottom:4px;">💊 Write Prescription</h2>
+<p style="color:var(--muted); font-size:13px; margin-bottom:24px;">
+  Patient: <strong style="color:var(--text);">{{ patient.name | title }}</strong>
+  {% if details and details.age %} · {{ details.age }} years{% endif %}
+  {% if details and details.bp %} · BP: {{ details.bp }}{% endif %}
+</p>
+
+<div class="rx-layout">
+
+  <!-- Main Prescription Form -->
+  <div class="rx-card">
+    <div class="rx-banner">
+      <div>
+        <div class="rx-banner-title">New Prescription</div>
+        <div class="rx-banner-sub">For: {{ patient.name | title }} · {{ patient.email }}</div>
+      </div>
+    </div>
+
+    <div class="rx-body">
+      <form method="POST">
+
+        <!-- Quick Templates -->
+        <div class="rx-section-label">Condition Templates</div>
+        <div class="template-grid" style="margin-bottom:20px;">
+          <button type="button" class="template-btn" onclick="applyTemplate('fever')">
+            🌡️ Fever / Cold
+          </button>
+          <button type="button" class="template-btn" onclick="applyTemplate('bp')">
+            💉 High BP
+          </button>
+          <button type="button" class="template-btn" onclick="applyTemplate('diabetes')">
+            🩸 Diabetes
+          </button>
+          <button type="button" class="template-btn" onclick="applyTemplate('vitamin')">
+            💊 Vitamins
+          </button>
+        </div>
+
+        <!-- Quick Medicines -->
+        <div class="rx-section-label">Quick Add Medicine</div>
+        <div class="quick-meds">
+          <button type="button" class="qm-btn" onclick="addMed('Paracetamol 500mg - 1 tab twice daily after meals')">Paracetamol</button>
+          <button type="button" class="qm-btn" onclick="addMed('Amoxicillin 500mg - 1 cap thrice daily for 5 days')">Amoxicillin</button>
+          <button type="button" class="qm-btn" onclick="addMed('Metformin 500mg - 1 tab twice daily with meals')">Metformin</button>
+          <button type="button" class="qm-btn" onclick="addMed('Amlodipine 5mg - 1 tab once daily morning')">Amlodipine</button>
+          <button type="button" class="qm-btn" onclick="addMed('Atorvastatin 10mg - 1 tab at bedtime')">Atorvastatin</button>
+          <button type="button" class="qm-btn" onclick="addMed('Omeprazole 20mg - 1 cap before breakfast')">Omeprazole</button>
+          <button type="button" class="qm-btn" onclick="addMed('Cetirizine 10mg - 1 tab at night')">Cetirizine</button>
+          <button type="button" class="qm-btn" onclick="addMed('Vitamin D3 60000 IU - Once weekly for 8 weeks')">Vitamin D3</button>
+          <button type="button" class="qm-btn" onclick="addMed('ORS Sachet - Mix in 1L water, sip throughout day')">ORS</button>
+          <button type="button" class="qm-btn" onclick="addMed('Azithromycin 500mg - 1 tab once daily for 3 days')">Azithromycin</button>
+        </div>
+
+        <!-- Medicines Field -->
+        <div class="rx-section-label">Medicines & Dosage *</div>
+        <textarea class="rx-textarea" name="medicines" id="med-field" rows="5"
+          placeholder="e.g.&#10;Paracetamol 500mg - 1 tablet twice daily after meals&#10;Amoxicillin 500mg - 1 capsule thrice daily for 5 days"
+          required oninput="updateCount('med-count', this.value)"></textarea>
+        <div class="rx-char-count" id="med-count">0 characters</div>
+
+        <!-- Notes Field -->
+        <div class="rx-section-label">Doctor's Notes & Instructions</div>
+        <textarea class="rx-textarea" name="notes" rows="3"
+          placeholder="e.g. Take medicines with warm water. Avoid spicy food. Rest for 3 days. Follow up after 1 week if symptoms persist."
+          oninput="updateCount('note-count', this.value)"></textarea>
+        <div class="rx-char-count" id="note-count">0 characters</div>
+
+        <div class="rx-submit-area">
+          <a href="/doctor/patient/{{ patient.id }}" class="btn btn-ghost" style="flex:1; justify-content:center;">
+            Cancel
+          </a>
+          <button type="submit" class="btn" style="flex:2; justify-content:center; padding:13px;">
+            💊 Save Prescription
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Sidebar -->
+  <div class="right-col">
+
+    <!-- Patient Snapshot -->
+    <div class="side-sec">
+      <div class="side-sec-hdr">🧑 Patient Snapshot</div>
+      <div class="side-sec-body">
+        <div style="text-align:center; margin-bottom:14px;">
+          <div style="width:56px; height:56px; border-radius:14px; background:var(--teal-pale); border:2px solid #99f6e4; display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 10px;">🧑</div>
+          <div style="font-size:15px; font-weight:700; color:var(--text);">{{ patient.name | title }}</div>
+          <div style="font-size:12px; color:var(--muted);">{{ patient.email }}</div>
+        </div>
+
+        {% if details %}
+        <div class="pi-row">
+          <span class="pi-label">Age</span>
+          <span class="pi-val">{{ details.age or '—' }} yrs</span>
+        </div>
+        <div class="pi-row">
+          <span class="pi-label">Blood Pressure</span>
+          <span class="pi-val" style="color:{% if details.bp and details.bp.split('/')[0]|int >= 140 %}#dc2626{% elif details.bp and details.bp.split('/')[0]|int >= 130 %}#ca8a04{% else %}#16a34a{% endif %};">
+            {{ details.bp or '—' }}
+          </span>
+        </div>
+        <div class="pi-row">
+          <span class="pi-label">Blood Sugar</span>
+          <span class="pi-val" style="color:{% if details.sugar and details.sugar >= 126 %}#dc2626{% elif details.sugar and details.sugar >= 100 %}#ca8a04{% else %}#16a34a{% endif %};">
+            {{ details.sugar or '—' }}{% if details.sugar %} mg/dL{% endif %}
+          </span>
+        </div>
+        <div class="pi-row">
+          <span class="pi-label">Weight</span>
+          <span class="pi-val">{{ details.weight or '—' }} kg</span>
+        </div>
+        <div class="pi-row">
+          <span class="pi-label">Smoking</span>
+          <span class="pi-val" style="color:{% if details.smoking == 'yes' %}#dc2626{% else %}#16a34a{% endif %};">
+            {{ details.smoking | capitalize }}
+          </span>
+        </div>
+        {% else %}
+        <div style="text-align:center; color:var(--muted); font-size:13px; padding:10px 0;">No health data</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Past Prescriptions -->
+    <div class="side-sec">
+      <div class="side-sec-hdr">📋 Past Prescriptions ({{ prescriptions | length }})</div>
+      <div class="side-sec-body">
+        {% if prescriptions %}
+          {% for pres in prescriptions[:4] %}
+          <div class="past-rx-item">
+            <div class="past-rx-date">{{ pres.date.strftime('%d %b %Y') }}</div>
+            <div class="past-rx-meds">
+              {{ pres.medicines[:100] }}{% if pres.medicines|length > 100 %}…{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+          {% if prescriptions | length > 4 %}
+          <div style="text-align:center; font-size:12px; color:var(--muted); margin-top:8px;">
+            +{{ prescriptions | length - 4 }} more prescriptions
+          </div>
+          {% endif %}
+        {% else %}
+        <div style="text-align:center; font-size:13px; color:var(--muted); padding:12px 0;">
+          No previous prescriptions
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quick Tips for Doctor -->
+    <div class="side-sec">
+      <div class="side-sec-hdr">💡 Prescription Tips</div>
+      <div class="side-sec-body">
+        <div style="font-size:12px; color:var(--muted); line-height:1.7;">
+          ✅ Always mention dosage & frequency<br>
+          ✅ Specify duration (e.g. 5 days)<br>
+          ✅ Note food instructions (before/after meals)<br>
+          ✅ Mention follow-up date in notes<br>
+          ⚠️ Check BP/Sugar before prescribing<br>
+          ⚠️ Note any known allergies
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const templates = {
+  fever: {
+    meds: `Paracetamol 500mg - 1 tablet every 6 hours if fever > 100°F\nCetirizine 10mg - 1 tablet at night\nVitamin C 500mg - 1 tablet once daily`,
+    notes: `Drink plenty of warm fluids. Rest for 3 days. Avoid cold foods and drinks. Follow up if fever persists beyond 3 days or exceeds 104°F.`
+  },
+  bp: {
+    meds: `Amlodipine 5mg - 1 tablet once daily in the morning\nTelmisartan 40mg - 1 tablet once daily`,
+    notes: `Reduce salt intake to less than 2g/day. Avoid processed foods. Exercise 30 minutes daily (light walking). Monitor BP daily and record readings. Follow up after 2 weeks.`
+  },
+  diabetes: {
+    meds: `Metformin 500mg - 1 tablet twice daily with breakfast and dinner\nGlipizide 5mg - 1 tablet before breakfast`,
+    notes: `Avoid sugary foods and drinks. Eat small frequent meals. Monitor fasting blood sugar daily. Exercise 30 minutes after meals. Follow up with HbA1c test after 3 months.`
+  },
+  vitamin: {
+    meds: `Vitamin D3 60000 IU - Once weekly for 8 weeks\nCalcium 500mg + Vitamin K2 - 1 tablet twice daily\nVitamin B12 1500mcg - 1 tablet once daily`,
+    notes: `Take Vitamin D with meals for better absorption. Get 15-20 minutes of sunlight daily. Follow up after 8 weeks for blood test.`
+  }
+};
+
+function applyTemplate(type) {
+  const t = templates[type];
+  document.getElementById('med-field').value = t.meds;
+  document.querySelector('textarea[name="notes"]').value = t.notes;
+  updateCount('med-count', t.meds);
+  updateCount('note-count', t.notes);
+}
+
+function addMed(med) {
+  const field = document.getElementById('med-field');
+  field.value = field.value ? field.value + '\n' + med : med;
+  updateCount('med-count', field.value);
+  field.focus();
+  field.scrollTop = field.scrollHeight;
+}
+
+function updateCount(id, val) {
+  document.getElementById(id).textContent = val.length + ' characters';
+}
+</script>
+
+{% endblock %}

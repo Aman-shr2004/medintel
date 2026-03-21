@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ── Header ── */
+.appt-page-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+
+/* ── Smart Suggestion Banner ── */
+.suggestion-banner {
+  background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+  border: 2px solid #5eead4;
+  border-radius: 16px; padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sb-icon {
+  font-size: 40px; flex-shrink: 0;
+}
+
+.sb-title {
+  font-size: 15px; font-weight: 700; color: #0f766e;
+}
+
+.sb-desc { font-size: 13px; color: #0d9488; margin-top: 3px; }
+
+.sb-btn {
+  margin-left: auto; padding: 9px 20px;
+  border-radius: 10px; background: var(--teal);
+  color: #fff; font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer; white-space: nowrap;
+  width: auto; transition: all .18s; font-family: 'DM Sans', sans-serif;
+}
+
+.sb-btn:hover { background: var(--teal-dark); transform: translateY(-1px); }
+
+/* ── Main layout ── */
+.appt-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px; align-items: start;
+}
+
+/* ── Doctor Cards ── */
+.doctors-section { margin-bottom: 4px; }
+
+.section-title-row {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
+}
+
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px; margin-bottom: 24px;
+}
+
+.doctor-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 16px; padding: 20px;
+  cursor: pointer; transition: all .22s;
+  position: relative; overflow: hidden;
+}
+
+.doctor-card:hover {
+  border-color: var(--teal);
+  box-shadow: 0 6px 24px rgba(13,148,136,.12);
+  transform: translateY(-2px);
+}
+
+.doctor-card.selected {
+  border-color: var(--teal);
+  background: var(--teal-pale);
+  box-shadow: 0 0 0 3px rgba(13,148,136,.15);
+}
+
+.doctor-card.suggested {
+  border-color: #5eead4;
+  background: linear-gradient(135deg, #f0fdfa, #f8fefd);
+}
+
+.suggested-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: var(--teal); color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 9px; border-radius: 6px;
+  letter-spacing: .3px;
+}
+
+.dc-top {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+
+.dc-avatar {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0; color: #fff;
+}
+
+.dc-name  { font-size: 15px; font-weight: 700; color: var(--text); }
+.dc-spec  { font-size: 12px; color: var(--teal); font-weight: 600; margin-top: 2px; }
+.dc-email { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.dc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+
+.dc-tag {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.dc-select-btn {
+  width: 100%; padding: 9px; border-radius: 10px;
+  border: 1.5px solid var(--teal);
+  background: var(--teal-pale); color: var(--teal-dark);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all .18s; font-family: 'DM Sans', sans-serif;
+}
+
+.dc-select-btn:hover, .doctor-card.selected .dc-select-btn {
+  background: var(--teal); color: #fff;
+}
+
+/* ── Booking Form ── */
+.booking-form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.bf-header {
+  padding: 16px 20px;
+  background: linear-gradient(90deg, #0f766e, #0d9488);
+  display: flex; align-items: center; gap: 10px;
+}
+
+.bf-body { padding: 22px; }
+
+.form-row { margin-bottom: 16px; }
+
+.form-label {
+  font-size: 12px; font-weight: 700; color: var(--text);
+  text-transform: uppercase; letter-spacing: .5px;
+  display: block; margin-bottom: 7px;
+}
+
+.form-input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: 14px;
+  font-family: 'DM Sans', sans-serif; color: var(--text);
+  background: var(--surface); margin: 0;
+  transition: border-color .15s;
+}
+
+.form-input:focus {
+  outline: none; border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,148,136,.1);
+}
+
+/* Time slots */
+.time-slots {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+
+.time-slot {
+  padding: 8px 6px; border-radius: 9px;
+  border: 1.5px solid var(--border);
+  background: var(--surface); font-size: 12px;
+  font-weight: 600; color: var(--muted);
+  cursor: pointer; text-align: center;
+  transition: all .15s; width: auto;
+}
+
+.time-slot:hover { border-color: var(--teal); color: var(--teal-dark); background: var(--teal-pale); }
+.time-slot.selected { border-color: var(--teal); background: var(--teal); color: #fff; }
+
+/* Selected doctor display */
+.selected-doc-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--teal-pale); border: 1.5px solid #99f6e4;
+  margin-bottom: 16px;
+}
+
+.no-doc-msg {
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--bg); border: 1.5px dashed var(--border);
+  font-size: 13px; color: var(--muted); text-align: center;
+  margin-bottom: 16px;
+}
+
+/* ── Right sidebar ── */
+.right-col { display: flex; flex-direction: column; gap: 16px; }
+
+.side-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+
+.side-card-hdr {
+  padding: 13px 18px; background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.side-card-body { padding: 16px; }
+
+/* Appointment history */
+.appt-hist-item {
+  display: flex; align-items: flex-start;
+  gap: 12px; padding: 12px;
+  background: var(--bg); border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.appt-hist-item:last-child { margin-bottom: 0; }
+
+.ahi-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  display: flex; align-items: center;
+  justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+
+.ahi-doc  { font-size: 13px; font-weight: 600; color: var(--text); }
+.ahi-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.ahi-status {
+  margin-left: auto; font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 6px; white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Health summary */
+.health-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.health-row:last-child { border-bottom: none; }
+
+@media (max-width:900px) {
+  .appt-layout { grid-template-columns: 1fr; }
+  .right-col { display: none; }
+  .time-slots { grid-template-columns: repeat(3,1fr); }
+}
+</style>
+
+<!-- ── Header ── -->
+<div class="appt-page-header">
+  <div>
+    <h2>📅 Book Appointment</h2>
+    <div style="font-size:13px; color:var(--muted); margin-top:4px;">
+      Choose a doctor and schedule your visit
+    </div>
+  </div>
+  <a href="/dashboard" class="btn btn-ghost">← Dashboard</a>
+</div>
+
+<!-- ── Smart Suggestion Banner ── -->
+{% if suggestion_reason and suggested_doctor_id %}
+<div class="suggestion-banner">
+  <div class="sb-icon">🤖</div>
+  <div>
+    <div class="sb-title">AI Doctor Recommendation</div>
+    <div class="sb-desc">{{ suggestion_reason }}</div>
+  </div>
+  <button class="sb-btn" onclick="selectDoctor({{ suggested_doctor_id }})">
+    Book Suggested Doctor →
+  </button>
+</div>
+{% endif %}
+
+<div class="appt-layout">
+
+  <!-- ── Left: Doctors + Form ── -->
+  <div>
+
+    <!-- Doctor Selection -->
+    <div class="doctors-section">
+      <div class="section-title-row">
+        <div>
+          <h3 style="font-family:'Fraunces',serif; font-size:17px;">👨‍⚕️ Available Doctors</h3>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ doctors | length }} doctor(s) available</div>
+        </div>
+      </div>
+
+      {% if doctors %}
+      <div class="doctors-grid">
+        {% for doc in doctors %}
+        <div class="doctor-card {% if doc.id == suggested_doctor_id %}suggested{% endif %}"
+             id="dc-{{ doc.id }}"
+             onclick="selectDoctor({{ doc.id }})">
+
+          {% if doc.id == suggested_doctor_id %}
+          <div class="suggested-badge">🤖 AI Recommended</div>
+          {% endif %}
+
+          <div class="dc-top">
+            <div class="dc-avatar">👨‍⚕️</div>
+            <div>
+              <div class="dc-name">Dr. {{ doc.name | title }}</div>
+              <div class="dc-spec">
+                {{ doc.specialization if doc.specialization else 'General Physician' }}
+              </div>
+              <div class="dc-email">{{ doc.email }}</div>
+            </div>
+          </div>
+
+          <div class="dc-tags">
+            {% set spec = doc.specialization if doc.specialization else 'General Physician' %}
+            {% if 'Cardio' in spec %}
+              <span class="dc-tag">❤️ Heart</span>
+              <span class="dc-tag">💉 Blood Pressure</span>
+              <span class="dc-tag">🫀 Cardiology</span>
+            {% elif 'Endocrin' in spec or 'Diabetes' in spec %}
+              <span class="dc-tag">🩸 Diabetes</span>
+              <span class="dc-tag">🔬 Hormones</span>
+              <span class="dc-tag">📊 Metabolism</span>
+            {% elif 'Neuro' in spec %}
+              <span class="dc-tag">🧠 Brain</span>
+              <span class="dc-tag">⚡ Nervous System</span>
+            {% elif 'Derma' in spec %}
+              <span class="dc-tag">🧴 Skin</span>
+              <span class="dc-tag">💆 Hair & Nails</span>
+            {% elif 'Pediatr' in spec %}
+              <span class="dc-tag">👶 Children</span>
+              <span class="dc-tag">🌱 Growth</span>
+            {% elif 'Psychiatr' in spec %}
+              <span class="dc-tag">🧘 Mental Health</span>
+              <span class="dc-tag">💭 Therapy</span>
+            {% elif 'Ortho' in spec %}
+              <span class="dc-tag">🦴 Bones</span>
+              <span class="dc-tag">💪 Joints</span>
+            {% else %}
+              <span class="dc-tag">🏥 General</span>
+              <span class="dc-tag">💊 Medication</span>
+              <span class="dc-tag">⚖️ Weight</span>
+            {% endif %}
+          </div>
+
+          <button class="dc-select-btn" id="btn-{{ doc.id }}">
+            Select Doctor
+          </button>
+
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align:center; padding:40px 20px; background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:24px;">
+        <div style="font-size:48px; margin-bottom:12px;">👨‍⚕️</div>
+        <div style="font-size:15px; font-weight:600; color:var(--text);">No Doctors Available</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:6px;">Please check back later or contact support.</div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Booking Form -->
+    <div class="booking-form-card">
+      <div class="bf-header">
+        <span style="font-size:20px;">📋</span>
+        <div>
+          <div style="font-weight:700; color:#fff; font-size:15px;">Appointment Details</div>
+          <div style="font-size:12px; color:rgba(255,255,255,.75);">Fill in your preferred date and time</div>
+        </div>
+      </div>
+
+      <div class="bf-body">
+        <form method="POST" id="appt-form">
+          <input type="hidden" name="doctor_id" id="selected-doctor-id" value="">
+
+          <!-- Selected Doctor Display -->
+          <div id="selected-doc-display" class="no-doc-msg">
+            👆 Please select a doctor from above
+          </div>
+
+          <!-- Date -->
+          <div class="form-row">
+            <label class="form-label">Preferred Date</label>
+            <input type="date" name="date" id="appt-date" class="form-input"
+              min="{{ '' }}" required>
+          </div>
+
+          <!-- Time Slots -->
+          <div class="form-row">
+            <label class="form-label">Preferred Time</label>
+            <div class="time-slots">
+              {% for t in ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'] %}
+              <button type="button" class="time-slot"
+                onclick="selectTime('{{ t }}')"
+                id="ts-{{ t | replace(':', '') }}">
+                {{ t }}
+              </button>
+              {% endfor %}
+            </div>
+            <input type="hidden" name="time" id="selected-time" value="">
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" id="submit-btn" class="btn"
+            style="width:100%; justify-content:center; padding:13px; font-size:15px; margin-top:8px;"
+            onclick="return validateForm()">
+            📅 Book Appointment
+          </button>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Right Sidebar ── -->
+  <div class="right-col">
+
+    <!-- Your Health Summary -->
+    <div class="side-card">
+      <div class="side-card-hdr">💓 Your Health Summary</div>
+      <div class="side-card-body">
+        {% if details %}
+        <div class="health-row">
+          <span style="color:var(--muted);">Blood Pressure</span>
+          <span style="font-weight:700; color:
+            {% if details.bp and details.bp.split('/')[0]|int < 120 %}#16a34a
+            {% elif details.bp and details.bp.split('/')[0]|int < 140 %}#ca8a04
+            {% else %}#dc2626{% endif %};">
+            {{ details.bp or '—' }}
+          </span>
+        </div>
+        <div class="health-row">
+          <span style="color:var(--muted);">Blood Sugar</span>
+          <span style="font-weight:700; color:
+            {% if details.sugar and details.sugar < 100 %}#16a34a
+            {% elif details.sugar and details.sugar < 126 %}#ca8a04
+            {% else %}#dc2626{% endif %};">
+            {{ details.sugar or '—' }}{% if details.sugar %} mg/dL{% endif %}
+          </span>
+        </div>
+        <div class="health-row">
+          <span style="color:var(--muted);">Smoking</span>
+          <span style="font-weight:700; color:{% if details.smoking=='yes'%}#dc2626{% else %}#16a34a{% endif %};">
+            {{ details.smoking | capitalize }}
+          </span>
+        </div>
+        <div class="health-row">
+          <span style="color:var(--muted);">Activity</span>
+          <span style="font-weight:700;">{{ details.activity | capitalize }}</span>
+        </div>
+        <a href="/health-data" class="btn btn-ghost"
+          style="width:100%; justify-content:center; margin-top:12px; font-size:12px; padding:8px;">
+          ✏️ Update Health Data
+        </a>
+        {% else %}
+        <div style="text-align:center; font-size:13px; color:var(--muted); padding:12px 0;">
+          No health data yet.<br>
+          <a href="/health-data" style="color:var(--teal); font-weight:600;">Add it →</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Appointment History -->
+    <div class="side-card">
+      <div class="side-card-hdr">📋 My Appointments ({{ appt_data | length }})</div>
+      <div class="side-card-body">
+        {% if appt_data %}
+          {% for item in appt_data %}
+          <div class="appt-hist-item">
+            <div class="ahi-icon" style="
+              {% if item.appt.status == 'Confirmed' %}background:#f0fdf4;
+              {% elif item.appt.status == 'Pending' %}background:#fffbeb;
+              {% else %}background:#fef2f2;{% endif %}">
+              {% if item.appt.status == 'Confirmed' %}✅
+              {% elif item.appt.status == 'Pending' %}⏳
+              {% else %}❌{% endif %}
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div class="ahi-doc">
+                Dr. {{ item.doctor.name | title if item.doctor else 'Unknown' }}
+              </div>
+              <div class="ahi-meta">
+                📅 {{ item.appt.date }} · 🕐 {{ item.appt.time }}
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+              <span class="ahi-status" style="
+                {% if item.appt.status == 'Confirmed' %}background:#f0fdf4;color:#16a34a;
+                {% elif item.appt.status == 'Pending' %}background:#fffbeb;color:#ca8a04;
+                {% else %}background:#fef2f2;color:#dc2626;{% endif %}">
+                {{ item.appt.status }}
+              </span>
+              {% if item.appt.status == 'Pending' %}
+              <a href="/appointment/cancel/{{ item.appt.id }}"
+                style="font-size:10px; color:#dc2626; font-weight:600; text-decoration:none;"
+                onclick="return confirm('Cancel this appointment?')">
+                Cancel
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+        <div style="text-align:center; font-size:13px; color:var(--muted); padding:16px 0;">
+          <div style="font-size:32px; margin-bottom:8px;">📅</div>
+          No appointments yet.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="side-card">
+      <div class="side-card-hdr">ℹ️ How It Works</div>
+      <div class="side-card-body">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          {% for step, desc in [
+            ('1. Select Doctor', 'Choose from available doctors or use AI suggestion'),
+            ('2. Pick Date & Time', 'Select your preferred slot'),
+            ('3. Book', 'Submit your appointment request'),
+            ('4. Wait for Confirmation', 'Doctor will confirm or decline'),
+            ('5. Visit', 'Attend your appointment on the confirmed date')
+          ] %}
+          <div style="display:flex; gap:10px; align-items:flex-start;">
+            <div style="width:24px; height:24px; border-radius:50%; background:var(--teal-pale); border:1.5px solid #99f6e4; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--teal); flex-shrink:0; margin-top:1px;">
+              {{ loop.index }}
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:var(--text);">{{ step }}</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:1px;">{{ desc }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let selectedDoctorId   = null;
+let selectedDoctorName = '';
+let selectedTime       = '';
+
+// Set min date to today
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('appt-date').min = today;
+
+// Pre-select suggested doctor if exists
+{% if suggested_doctor_id %}
+window.addEventListener('load', () => {
+  // Don't auto-select, just highlight
+});
+{% endif %}
+
+function selectDoctor(id) {
+  // Remove previous selection
+  document.querySelectorAll('.doctor-card').forEach(c => {
+    c.classList.remove('selected');
+    const btn = c.querySelector('.dc-select-btn');
+    if (btn) btn.textContent = 'Select Doctor';
+  });
+
+  // Select new
+  const card = document.getElementById('dc-' + id);
+  if (card) {
+    card.classList.add('selected');
+    const btn = card.querySelector('.dc-select-btn');
+    if (btn) btn.textContent = '✅ Selected';
+    selectedDoctorName = card.querySelector('.dc-name').textContent;
+    selectedDoctorId   = id;
+  }
+
+  document.getElementById('selected-doctor-id').value = id;
+
+  // Update display
+  document.getElementById('selected-doc-display').innerHTML = `
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:22px;">👨‍⚕️</span>
+      <div>
+        <div style="font-size:13px; font-weight:700; color:var(--teal-dark);">${selectedDoctorName}</div>
+        <div style="font-size:11px; color:var(--muted);">Selected — choose date & time below</div>
+      </div>
+      <span style="margin-left:auto; font-size:18px;">✅</span>
+    </div>
+  `;
+  document.getElementById('selected-doc-display').className = 'selected-doc-row';
+
+  // Scroll to form
+  document.querySelector('.booking-form-card').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function selectTime(t) {
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  const slot = document.getElementById('ts-' + t.replace(':',''));
+  if (slot) slot.classList.add('selected');
+  selectedTime = t;
+  document.getElementById('selected-time').value = t;
+}
+
+function validateForm() {
+  if (!selectedDoctorId) {
+    alert('⚠️ Please select a doctor first!');
+    return false;
+  }
+  if (!document.getElementById('appt-date').value) {
+    alert('⚠️ Please select a date!');
+    return false;
+  }
+  if (!selectedTime) {
+    alert('⚠️ Please select a time slot!');
+    return false;
+  }
+  return true;
+}
+</script>
+
+{% endblock %}

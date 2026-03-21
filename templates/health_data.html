@@ -1,0 +1,803 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ── Page Header ── */
+.hd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hd-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── Progress Steps ── */
+.steps-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 24px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  cursor: pointer;
+}
+
+.step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all .2s;
+}
+
+.step.active .step-num {
+  background: var(--teal);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(13,148,136,.15);
+}
+
+.step.done .step-num {
+  background: #22c55e;
+  color: #fff;
+}
+
+.step-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.step.active .step-label { color: var(--teal-dark); }
+.step.done  .step-label  { color: #16a34a; }
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  border-radius: 99px;
+  max-width: 60px;
+}
+
+/* ── Form layout ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── Section card ── */
+.section-card {
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.section-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.section-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.section-body {
+  padding: 24px;
+}
+
+/* ── Input group ── */
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group:last-child { margin-bottom: 0; }
+
+.input-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.input-label-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.input-hint {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
+  background: var(--surface);
+}
+
+.input-with-unit:focus-within {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,148,136,.12);
+}
+
+.input-with-unit input {
+  border: none;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+  flex: 1;
+}
+
+.input-with-unit input:focus {
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.unit-badge {
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border-left: 1.5px solid var(--border);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* Live feedback bar */
+.live-bar-wrap {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.live-bar-fill {
+  height: 6px;
+  border-radius: 99px;
+  width: 0%;
+  transition: width .4s ease, background .4s ease;
+}
+
+.live-feedback {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 70px;
+  text-align: right;
+}
+
+/* Reference ranges */
+.ref-ranges {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.ref-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Toggle buttons (for smoking/activity) */
+.toggle-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  transition: all .18s;
+  min-width: 80px;
+}
+
+.toggle-btn:hover {
+  border-color: var(--teal);
+  color: var(--teal-dark);
+  background: var(--teal-pale);
+}
+
+.toggle-btn.selected {
+  border-color: var(--teal);
+  background: var(--teal-pale);
+  color: var(--teal-dark);
+}
+
+.toggle-btn.selected-danger {
+  border-color: #ef4444;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* ── BMI live preview ── */
+.bmi-preview {
+  background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+  border: 1.5px solid #99f6e4;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.bmi-num {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--teal-dark);
+}
+
+.bmi-cat {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal);
+  margin-top: 2px;
+}
+
+/* ── Submit area ── */
+.submit-area {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.submit-info {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submit-btns {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* existing data banner */
+.existing-banner {
+  background: var(--teal-pale);
+  border: 1.5px solid #99f6e4;
+  border-radius: 12px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--teal-dark);
+  font-weight: 500;
+}
+
+@media (max-width: 700px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ── Header ── -->
+<div class="hd-header">
+  <div>
+    <h2>📋 Health Data</h2>
+    <div class="hd-subtitle">Keep your vitals up to date for accurate health analysis</div>
+  </div>
+  <a href="/dashboard" class="btn btn-ghost">← Back to Dashboard</a>
+</div>
+
+{% if details %}
+<div class="existing-banner">
+  <span style="font-size:20px;">✅</span>
+  <div>You have existing health data on record. Update any fields below and save.</div>
+</div>
+{% endif %}
+
+<!-- ── Progress Steps ── -->
+<div class="steps-bar">
+  <div class="step active" id="step1">
+    <div class="step-num">1</div>
+    <div class="step-label">Body Metrics</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step" id="step2">
+    <div class="step-num">2</div>
+    <div class="step-label">Vitals</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step" id="step3">
+    <div class="step-num">3</div>
+    <div class="step-label">Lifestyle</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step" id="step4">
+    <div class="step-num">4</div>
+    <div class="step-label">Save</div>
+  </div>
+</div>
+
+<form method="POST" id="health-form">
+
+<!-- ── SECTION 1: Body Metrics ── -->
+<div class="section-card">
+  <div class="section-header">
+    <div class="section-icon" style="background:#f0fdf4;">🧍</div>
+    <div>
+      <div class="section-title">Body Metrics</div>
+      <div class="section-desc">Your age, weight and height — used to calculate BMI</div>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="form-grid">
+
+      <!-- Age -->
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Age</span>
+          <span class="input-hint">1 – 120 years</span>
+        </div>
+        <div class="input-with-unit">
+          <input type="number" name="age" id="inp-age" placeholder="e.g. 28"
+            min="1" max="120" required
+            value="{{ details.age if details else '' }}"
+            oninput="updateAge(this.value)">
+          <div class="unit-badge">years</div>
+        </div>
+        <div class="live-bar-wrap">
+          <div class="live-bar-bg"><div class="live-bar-fill" id="bar-age"></div></div>
+          <div class="live-feedback" id="fb-age" style="color:var(--muted);">—</div>
+        </div>
+      </div>
+
+      <!-- Weight -->
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Weight</span>
+          <span class="input-hint">20 – 300 kg</span>
+        </div>
+        <div class="input-with-unit">
+          <input type="number" name="weight" id="inp-weight" placeholder="e.g. 70"
+            min="20" max="300" step="0.1" required
+            value="{{ details.weight if details else '' }}"
+            oninput="calcBMI()">
+          <div class="unit-badge">kg</div>
+        </div>
+      </div>
+
+      <!-- Height -->
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Height</span>
+          <span class="input-hint">100 – 250 cm</span>
+        </div>
+        <div class="input-with-unit">
+          <input type="number" name="height" id="inp-height" placeholder="e.g. 170"
+            min="100" max="250" required
+            value="{{ details.height if details else '' }}"
+            oninput="calcBMI()">
+          <div class="unit-badge">cm</div>
+        </div>
+      </div>
+
+      <!-- BMI Live Preview -->
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">BMI (Auto-calculated)</span>
+        </div>
+        <div class="bmi-preview" id="bmi-preview">
+          <div>
+            <div class="bmi-num" id="bmi-val">—</div>
+            <div class="bmi-cat" id="bmi-cat">Enter weight & height</div>
+          </div>
+          <div style="font-size:32px;" id="bmi-emoji">📏</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 2: Vitals ── -->
+<div class="section-card">
+  <div class="section-header">
+    <div class="section-icon" style="background:#fff1f2;">💓</div>
+    <div>
+      <div class="section-title">Clinical Vitals</div>
+      <div class="section-desc">Blood pressure and blood sugar readings</div>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="form-grid">
+
+      <!-- Blood Pressure -->
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Blood Pressure</span>
+          <span class="input-hint">systolic/diastolic</span>
+        </div>
+        <div class="input-with-unit">
+          <input type="text" name="bp" id="inp-bp" placeholder="e.g. 120/80"
+            pattern="\d{2,3}\/\d{2,3}" required
+            value="{{ details.bp if details else '' }}"
+            oninput="updateBP(this.value)">
+          <div class="unit-badge">mmHg</div>
+        </div>
+        <div class="live-bar-wrap">
+          <div class="live-bar-bg"><div class="live-bar-fill" id="bar-bp"></div></div>
+          <div class="live-feedback" id="fb-bp" style="color:var(--muted);">—</div>
+        </div>
+        <div class="ref-ranges" style="margin-top:10px;">
+          <span class="ref-chip" style="background:#f0fdf4; color:#16a34a;">Normal &lt;120/80</span>
+          <span class="ref-chip" style="background:#fefce8; color:#ca8a04;">Elevated 120–129</span>
+          <span class="ref-chip" style="background:#fff7ed; color:#ea580c;">Stage 1 130–139</span>
+          <span class="ref-chip" style="background:#fef2f2; color:#dc2626;">Stage 2 ≥140</span>
+        </div>
+      </div>
+
+      <!-- Blood Sugar -->
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Fasting Blood Sugar</span>
+          <span class="input-hint">after 8h fast</span>
+        </div>
+        <div class="input-with-unit">
+          <input type="number" name="sugar" id="inp-sugar" placeholder="e.g. 95"
+            min="40" max="600" required
+            value="{{ details.sugar if details else '' }}"
+            oninput="updateSugar(this.value)">
+          <div class="unit-badge">mg/dL</div>
+        </div>
+        <div class="live-bar-wrap">
+          <div class="live-bar-bg"><div class="live-bar-fill" id="bar-sugar"></div></div>
+          <div class="live-feedback" id="fb-sugar" style="color:var(--muted);">—</div>
+        </div>
+        <div class="ref-ranges" style="margin-top:10px;">
+          <span class="ref-chip" style="background:#f0fdf4; color:#16a34a;">Normal 70–99</span>
+          <span class="ref-chip" style="background:#fefce8; color:#ca8a04;">Prediabetic 100–125</span>
+          <span class="ref-chip" style="background:#fef2f2; color:#dc2626;">Diabetic ≥126</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 3: Lifestyle ── -->
+<div class="section-card">
+  <div class="section-header">
+    <div class="section-icon" style="background:#f5f3ff;">🌿</div>
+    <div>
+      <div class="section-title">Lifestyle Factors</div>
+      <div class="section-desc">Smoking and physical activity affect your health score</div>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="form-grid">
+
+      <!-- Smoking -->
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Smoking Status</span>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-btn {% if details and details.smoking == 'no' %}selected{% elif not details %}selected{% endif %}"
+               id="smoke-no" onclick="selectToggle('smoking', 'no', 'smoke-no', 'smoke-yes', false)">
+            🚭 Non-Smoker
+          </div>
+          <div class="toggle-btn {% if details and details.smoking == 'yes' %}selected-danger{% endif %}"
+               id="smoke-yes" onclick="selectToggle('smoking', 'yes', 'smoke-yes', 'smoke-no', true)">
+            🚬 Smoker
+          </div>
+        </div>
+        <input type="hidden" name="smoking" id="val-smoking"
+               value="{{ details.smoking if details else 'no' }}">
+        <div style="margin-top:10px; font-size:12px; color:var(--muted);" id="smoke-note">
+          ✅ Non-smokers have significantly lower cardiovascular risk.
+        </div>
+      </div>
+
+      <!-- Activity Level -->
+      <div class="input-group">
+        <div class="input-label">
+          <span class="input-label-text">Physical Activity Level</span>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-btn {% if details and details.activity == 'low' %}selected-danger{% endif %}"
+               id="act-low" onclick="selectActivity('low')">
+            🛋️ Low
+          </div>
+          <div class="toggle-btn {% if details and details.activity == 'moderate' %}selected{% elif not details %}selected{% endif %}"
+               id="act-mod" onclick="selectActivity('moderate')">
+            🚶 Moderate
+          </div>
+          <div class="toggle-btn {% if details and details.activity == 'high' %}selected{% endif %}"
+               id="act-high" onclick="selectActivity('high')">
+            🏃 High
+          </div>
+        </div>
+        <input type="hidden" name="activity" id="val-activity"
+               value="{{ details.activity if details else 'moderate' }}">
+        <div style="margin-top:10px; font-size:12px; color:var(--muted);" id="act-note">
+          🚶 Moderate: 30 min exercise, 3–5 days/week.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Submit Area ── -->
+<div class="submit-area">
+  <div class="submit-info">
+    <span style="font-size:18px;">🔒</span>
+    <span>Your health data is stored securely and used only for your personal analysis.</span>
+  </div>
+  <div class="submit-btns">
+    <a href="/dashboard" class="btn btn-ghost">Cancel</a>
+    <button type="submit" class="btn" style="padding:12px 32px; font-size:15px;">
+      💾 Save Health Data
+    </button>
+  </div>
+</div>
+
+</form>
+
+<script>
+// ── BMI Calculator ──────────────────────────────────────────
+function calcBMI() {
+  const w = parseFloat(document.getElementById('inp-weight').value);
+  const h = parseFloat(document.getElementById('inp-height').value) / 100;
+  const preview = document.getElementById('bmi-preview');
+  const valEl   = document.getElementById('bmi-val');
+  const catEl   = document.getElementById('bmi-cat');
+  const emoEl   = document.getElementById('bmi-emoji');
+
+  if (w > 0 && h > 0) {
+    const bmi = (w / (h * h)).toFixed(1);
+    valEl.textContent = bmi;
+
+    let cat, color, bg, emoji;
+    if      (bmi < 18.5) { cat = 'Underweight'; color = '#2563eb'; bg = '#eff6ff'; emoji = '📉'; }
+    else if (bmi <= 24.9) { cat = 'Normal ✅';  color = '#16a34a'; bg = '#f0fdf4'; emoji = '✅'; }
+    else if (bmi <= 29.9) { cat = 'Overweight'; color = '#ca8a04'; bg = '#fefce8'; emoji = '⚠️'; }
+    else                  { cat = 'Obese';      color = '#dc2626'; bg = '#fef2f2'; emoji = '🔴'; }
+
+    catEl.textContent = cat;
+    catEl.style.color = color;
+    valEl.style.color = color;
+    preview.style.background = `linear-gradient(135deg, ${bg}, ${bg})`;
+    preview.style.borderColor = color + '55';
+    emoEl.textContent = emoji;
+  } else {
+    valEl.textContent = '—';
+    catEl.textContent = 'Enter weight & height';
+    catEl.style.color = 'var(--teal)';
+    valEl.style.color = 'var(--teal-dark)';
+    emoEl.textContent = '📏';
+    preview.style.background = 'linear-gradient(135deg, #f0fdfa, #ccfbf1)';
+    preview.style.borderColor = '#99f6e4';
+  }
+}
+
+// ── Age feedback ────────────────────────────────────────────
+function updateAge(v) {
+  const bar = document.getElementById('bar-age');
+  const fb  = document.getElementById('fb-age');
+  const age = parseInt(v);
+  if (!age) { bar.style.width='0%'; fb.textContent='—'; return; }
+
+  bar.style.width = Math.min(age / 100 * 100, 100) + '%';
+  if      (age < 18)  { fb.textContent='Minor';        fb.style.color='#3b82f6'; bar.style.background='#3b82f6'; }
+  else if (age < 30)  { fb.textContent='Young Adult';  fb.style.color='#22c55e'; bar.style.background='#22c55e'; }
+  else if (age < 45)  { fb.textContent='Adult';        fb.style.color='#0d9488'; bar.style.background='#0d9488'; }
+  else if (age < 60)  { fb.textContent='Middle-Aged';  fb.style.color='#f59e0b'; bar.style.background='#f59e0b'; }
+  else                { fb.textContent='Senior';       fb.style.color='#f97316'; bar.style.background='#f97316'; }
+}
+
+// ── BP feedback ─────────────────────────────────────────────
+function updateBP(v) {
+  const bar = document.getElementById('bar-bp');
+  const fb  = document.getElementById('fb-bp');
+  const parts = v.split('/');
+  if (parts.length !== 2) { bar.style.width='0%'; fb.textContent='—'; return; }
+  const sys = parseInt(parts[0]);
+  if (!sys) return;
+
+  const pct = Math.min((sys - 80) / 120 * 100, 100);
+  bar.style.width = pct + '%';
+
+  if      (sys < 120) { fb.textContent='Normal ✅';  fb.style.color='#16a34a'; bar.style.background='#22c55e'; }
+  else if (sys < 130) { fb.textContent='Elevated';   fb.style.color='#ca8a04'; bar.style.background='#f59e0b'; }
+  else if (sys < 140) { fb.textContent='Stage 1 HTN'; fb.style.color='#ea580c'; bar.style.background='#f97316'; }
+  else if (sys < 180) { fb.textContent='Stage 2 HTN'; fb.style.color='#dc2626'; bar.style.background='#ef4444'; }
+  else                { fb.textContent='Crisis! 🚨'; fb.style.color='#dc2626'; bar.style.background='#dc2626'; }
+}
+
+// ── Sugar feedback ──────────────────────────────────────────
+function updateSugar(v) {
+  const bar = document.getElementById('bar-sugar');
+  const fb  = document.getElementById('fb-sugar');
+  const s   = parseFloat(v);
+  if (!s) { bar.style.width='0%'; fb.textContent='—'; return; }
+
+  const pct = Math.min((s - 40) / 260 * 100, 100);
+  bar.style.width = pct + '%';
+
+  if      (s < 70)   { fb.textContent='Too Low ⚠️'; fb.style.color='#2563eb'; bar.style.background='#3b82f6'; }
+  else if (s <= 99)  { fb.textContent='Normal ✅';  fb.style.color='#16a34a'; bar.style.background='#22c55e'; }
+  else if (s <= 125) { fb.textContent='Prediabetic'; fb.style.color='#ca8a04'; bar.style.background='#f59e0b'; }
+  else if (s <= 180) { fb.textContent='Diabetic';   fb.style.color='#dc2626'; bar.style.background='#ef4444'; }
+  else               { fb.textContent='Very High!'; fb.style.color='#dc2626'; bar.style.background='#dc2626'; }
+}
+
+// ── Smoking toggle ──────────────────────────────────────────
+function selectToggle(field, val, activeId, inactiveId, isDanger) {
+  document.getElementById('val-' + field).value = val;
+  const active   = document.getElementById(activeId);
+  const inactive = document.getElementById(inactiveId);
+  active.className   = 'toggle-btn ' + (isDanger ? 'selected-danger' : 'selected');
+  inactive.className = 'toggle-btn';
+
+  const note = document.getElementById('smoke-note');
+  if (val === 'yes') {
+    note.textContent = '⚠️ Smoking significantly increases heart disease and cancer risk.';
+    note.style.color = '#dc2626';
+  } else {
+    note.textContent = '✅ Non-smokers have significantly lower cardiovascular risk.';
+    note.style.color = 'var(--muted)';
+  }
+}
+
+// ── Activity toggle ─────────────────────────────────────────
+function selectActivity(val) {
+  document.getElementById('val-activity').value = val;
+  ['low','mod','high'].forEach(k => {
+    document.getElementById('act-' + k).className = 'toggle-btn';
+  });
+  const map = { low:'act-low', moderate:'act-mod', high:'act-high' };
+  const el  = document.getElementById(map[val]);
+  el.className = val === 'low' ? 'toggle-btn selected-danger' : 'toggle-btn selected';
+
+  const note = document.getElementById('act-note');
+  const notes = {
+    low:      '🛋️ Low activity increases risk of obesity and heart disease.',
+    moderate: '🚶 Moderate: 30 min exercise, 3–5 days/week.',
+    high:     '🏃 High: Daily intense exercise — excellent for your health!'
+  };
+  note.textContent = notes[val];
+  note.style.color = val === 'low' ? '#ea580c' : val === 'high' ? '#16a34a' : 'var(--muted)';
+}
+
+// ── Step progress tracker ────────────────────────────────────
+const form = document.getElementById('health-form');
+form.addEventListener('input', updateSteps);
+
+function updateSteps() {
+  const age    = document.getElementById('inp-age').value;
+  const weight = document.getElementById('inp-weight').value;
+  const height = document.getElementById('inp-height').value;
+  const bp     = document.getElementById('inp-bp').value;
+  const sugar  = document.getElementById('inp-sugar').value;
+
+  const s1done = age && weight && height;
+  const s2done = bp && sugar;
+  const s3done = true; // lifestyle always has defaults
+
+  setStep('step1', true, s1done);
+  setStep('step2', s1done, s2done);
+  setStep('step3', s1done && s2done, s3done);
+  setStep('step4', s1done && s2done, false);
+}
+
+function setStep(id, active, done) {
+  const el = document.getElementById(id);
+  el.className = 'step' + (done ? ' done' : active ? ' active' : '');
+  const num = el.querySelector('.step-num');
+  if (done) num.textContent = '✓';
+  else num.textContent = id.replace('step','');
+}
+
+// ── Init on page load ────────────────────────────────────────
+window.addEventListener('load', () => {
+  calcBMI();
+  updateAge(document.getElementById('inp-age').value);
+  updateBP(document.getElementById('inp-bp').value);
+  updateSugar(document.getElementById('inp-sugar').value);
+  updateSteps();
+
+  // Restore activity note
+  const act = document.getElementById('val-activity').value;
+  if (act) selectActivity(act);
+
+  // Restore smoke note
+  const smoke = document.getElementById('val-smoking').value;
+  if (smoke === 'yes') {
+    document.getElementById('smoke-note').textContent = '⚠️ Smoking significantly increases heart disease and cancer risk.';
+    document.getElementById('smoke-note').style.color = '#dc2626';
+  }
+});
+</script>
+
+{% endblock %}

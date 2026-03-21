@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedIntel – Smart Health</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8f5f3;
+      overflow: hidden;
+    }
+
+    /* ── Background — same as login ── */
+    .bg {
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(13,148,136,.18) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(15,118,110,.14) 0%, transparent 55%),
+        radial-gradient(ellipse at 60% 90%, rgba(20,184,166,.12) 0%, transparent 50%),
+        linear-gradient(135deg, #d4eeea 0%, #e8f5f3 40%, #cce8e3 100%);
+      z-index: 0;
+    }
+
+    .grid-pattern {
+      position: fixed; inset: 0;
+      background-image: radial-gradient(rgba(13,148,136,.08) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(90px); opacity: .25;
+      z-index: 0; pointer-events: none;
+      animation: orbFloat ease-in-out infinite;
+    }
+    .orb1 { width:400px; height:400px; background:#5eead4; top:-100px; left:-100px; animation-duration:12s; }
+    .orb2 { width:280px; height:280px; background:#14b8a6; bottom:-70px; right:-70px; animation-duration:15s; }
+    .orb3 { width:180px; height:180px; background:#0d9488; top:40%; left:55%; animation-duration:10s; animation-delay:2s; }
+
+    @keyframes orbFloat {
+      0%,100% { transform: translate(0,0); }
+      50%      { transform: translate(20px,-15px); }
+    }
+
+    /* ── Floating health badges ── */
+    .float-badge {
+      position: fixed; z-index: 5;
+      background: rgba(255,255,255,.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 14px;
+      padding: 10px 16px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 4px 16px rgba(13,148,136,.1);
+      pointer-events: none;
+      animation: badgeFloat ease-in-out infinite;
+    }
+
+    .fb-icon { font-size: 20px; flex-shrink: 0; }
+    .fb-val  { font-family:'Fraunces',serif; font-size:15px; font-weight:700; color:#0f766e; }
+    .fb-lbl  { font-size:11px; color:#64748b; margin-top:1px; }
+
+    .fb1 { top:18%; left:5%; animation-duration:5s; }
+    .fb2 { top:28%; right:5%; animation-duration:6s; animation-delay:1s; }
+    .fb3 { bottom:22%; left:4%; animation-duration:7s; animation-delay:2s; }
+    .fb4 { bottom:28%; right:4%; animation-duration:5.5s; animation-delay:.5s; }
+
+    @keyframes badgeFloat {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+
+    @media (max-width:900px) { .float-badge { display:none; } }
+
+    /* ── Main card — same as login ── */
+    .card {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 460px;
+      margin: 20px;
+      background: rgba(255,255,255,.75);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 24px;
+      padding: 48px 44px 42px;
+      box-shadow: 0 20px 60px rgba(13,148,136,.12), 0 4px 16px rgba(0,0,0,.06);
+      text-align: center;
+      animation: cardIn .6s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity:0; transform: translateY(24px) scale(.97); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Logo ── */
+    .logo-icon {
+      width: 70px; height: 70px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 34px;
+      margin: 0 auto 16px;
+      box-shadow: 0 8px 28px rgba(20,184,166,.35);
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse {
+      0%,100% { box-shadow: 0 8px 28px rgba(20,184,166,.35); }
+      50%      { box-shadow: 0 8px 40px rgba(20,184,166,.55); }
+    }
+
+    .logo-name {
+      font-family: 'Fraunces', serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+
+    .logo-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 5px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    /* ── Feature pills ── */
+    .pills-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 13px;
+      background: #f0fdfa;
+      border: 1.5px solid #99f6e4;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f766e;
+    }
+
+    /* ── Buttons — same style as login ── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+      border: none;
+      margin-bottom: 12px;
+      letter-spacing: .2px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(20,184,166,.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(20,184,136,.5);
+      background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+    }
+
+    .btn-secondary {
+      background: #f8fafc;
+      color: #0f172a;
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+
+    .btn-secondary:hover {
+      background: #f0fdfa;
+      border-color: #99f6e4;
+      color: #0f766e;
+      transform: translateY(-2px);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .div-line { flex:1; height:1px; background:#e2e8f0; }
+    .div-text  { font-size:12px; color:#94a3b8; font-weight:500; }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      padding-top: 22px;
+      margin-top: 22px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .stat-item {
+      flex: 1;
+      text-align: center;
+      padding: 0 10px;
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .stat-item:last-child { border-right: none; }
+
+    .stat-num {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #0d9488;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 3px;
+    }
+
+    .bottom-note {
+      margin-top: 18px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="grid-pattern"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- Floating health badges -->
+<div class="float-badge fb1">
+  <div class="fb-icon">❤️</div>
+  <div>
+    <div class="fb-val">72 bpm</div>
+    <div class="fb-lbl">Heart Rate</div>
+  </div>
+</div>
+
+<div class="float-badge fb2">
+  <div class="fb-icon">🩸</div>
+  <div>
+    <div class="fb-val">98 mg/dL</div>
+    <div class="fb-lbl">Blood Sugar</div>
+  </div>
+</div>
+
+<div class="float-badge fb3">
+  <div class="fb-icon">💉</div>
+  <div>
+    <div class="fb-val">118/76</div>
+    <div class="fb-lbl">Blood Pressure</div>
+  </div>
+</div>
+
+<div class="float-badge fb4">
+  <div class="fb-icon">⚖️</div>
+  <div>
+    <div class="fb-val">BMI 22.4</div>
+    <div class="fb-lbl">Normal Range</div>
+  </div>
+</div>
+
+<!-- Main Card -->
+<div class="card">
+
+  <!-- Logo -->
+  <div class="logo-icon">🩺</div>
+  <div class="logo-name">MedIntel</div>
+  <div class="logo-sub">Smart Health Monitor</div>
+
+  <!-- Feature Pills -->
+  <div class="pills-row">
+    <div class="pill">🤖 AI Prediction</div>
+    <div class="pill">💬 Health Chatbot</div>
+    <div class="pill">📊 BMI & Vitals</div>
+    <div class="pill">🚨 Emergency</div>
+  </div>
+
+  <!-- Buttons -->
+  <a href="/login" class="btn btn-primary">
+    🔐 Login to Your Account
+  </a>
+
+  <div class="divider">
+    <div class="div-line"></div>
+    <div class="div-text">New here?</div>
+    <div class="div-line"></div>
+  </div>
+
+  <a href="/register" class="btn btn-secondary">
+    ✨ Create Free Account
+  </a>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-num">AI</div>
+      <div class="stat-lbl">Powered</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">2</div>
+      <div class="stat-lbl">ML Models</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">100%</div>
+      <div class="stat-lbl">Free</div>
+    </div>
+  </div>
+
+  <div class="bottom-note">🔒 Your health data is private & secure</div>
+
+</div>
+
+</body>
+</html>

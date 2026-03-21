@@ -1,0 +1,1144 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ── Header ── */
+.pred-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ── Tab Bar ── */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 5px;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+
+.tab-btn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+}
+
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--teal-dark);
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--text);
+  background: rgba(255,255,255,.5);
+}
+
+/* ── Form Panel ── */
+.form-panel { display: none; }
+.form-panel.active { display: block; }
+
+/* ── Section card ── */
+.pred-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.pred-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.pred-card-icon {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.pred-card-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.pred-card-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.pred-card-body { padding: 22px; }
+
+/* ── Input grid ── */
+.inp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.inp-group { display: flex; flex-direction: column; gap: 6px; }
+
+.inp-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inp-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.inp-tooltip {
+  font-size: 11px;
+  color: var(--teal);
+  background: var(--teal-pale);
+  border: 1px solid #99f6e4;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: help;
+  font-weight: 500;
+}
+
+.inp-with-unit {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
+  background: var(--surface);
+}
+
+.inp-with-unit:focus-within {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,148,136,.1);
+}
+
+.inp-with-unit input,
+.inp-with-unit select {
+  border: none;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+  flex: 1;
+}
+
+.inp-with-unit input:focus,
+.inp-with-unit select:focus { box-shadow: none; }
+
+.inp-unit {
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  white-space: nowrap;
+  display: flex; align-items: center;
+  height: 100%;
+}
+
+/* ── Toggle buttons ── */
+.toggle-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tog-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  transition: all .15s;
+  width: auto;
+}
+
+.tog-btn:hover     { border-color: var(--teal); color: var(--teal-dark); background: var(--teal-pale); }
+.tog-btn.tog-sel   { border-color: var(--teal); background: var(--teal-pale); color: var(--teal-dark); }
+.tog-btn.tog-warn  { border-color: #f59e0b; background: #fffbeb; color: #b45309; }
+.tog-btn.tog-danger{ border-color: #ef4444; background: #fef2f2; color: #dc2626; }
+
+/* ── Submit bar ── */
+.submit-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.submit-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Results Section ── */
+.results-wrap {
+  animation: fadeIn .4s ease;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.results-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── Risk Result Card ── */
+.risk-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.risk-card-top {
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.risk-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Circular risk meter */
+.risk-meter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.risk-circle {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+}
+
+.risk-circle svg { transform: rotate(-90deg); }
+
+.risk-circle-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.risk-pct-num {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.risk-pct-lbl {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.risk-verdict {
+  flex: 1;
+}
+
+.risk-verdict-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.risk-verdict-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Risk level bar */
+.risk-level-bar {
+  padding: 16px 24px;
+}
+
+.risk-level-track {
+  height: 10px;
+  border-radius: 99px;
+  background: linear-gradient(to right, #22c55e 0%, #f59e0b 50%, #ef4444 100%);
+  position: relative;
+  margin: 8px 0;
+}
+
+.risk-level-marker {
+  position: absolute;
+  top: -5px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--text);
+  transform: translateX(-50%);
+  transition: left .8s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+
+.risk-level-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── Recommendations ── */
+.reco-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.reco-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.reco-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.reco-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.reco-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.reco-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.reco-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+/* ── Overall risk summary ── */
+.overall-card {
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.overall-icon { font-size: 48px; flex-shrink: 0; }
+
+.overall-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.overall-desc { font-size: 13px; margin-top: 6px; line-height: 1.5; opacity: .85; }
+
+@media (max-width: 800px) {
+  .inp-grid      { grid-template-columns: 1fr; }
+  .results-grid  { grid-template-columns: 1fr; }
+  .reco-grid     { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ── Header ── -->
+<div class="pred-header">
+  <div>
+    <h2>🤖 AI Health Prediction</h2>
+    <div style="font-size:13px; color:var(--muted); margin-top:4px;">
+      ML-powered heart disease & diabetes risk analysis
+    </div>
+  </div>
+  <a href="/dashboard" class="btn btn-ghost">← Dashboard</a>
+</div>
+
+<!-- ── Tab Bar ── -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('heart', this)">
+    ❤️ Heart Disease
+  </button>
+  <button class="tab-btn" onclick="switchTab('diabetes', this)">
+    🩸 Diabetes
+  </button>
+  <button class="tab-btn" onclick="switchTab('both', this)">
+    🔬 Both Together
+  </button>
+</div>
+
+<form method="POST" id="pred-form">
+
+<!-- ══════════════ HEART PANEL ══════════════ -->
+<div class="form-panel active" id="panel-heart">
+  <div class="pred-card">
+    <div class="pred-card-header">
+      <div class="pred-card-icon" style="background:#fff1f2;">❤️</div>
+      <div>
+        <div class="pred-card-title">Heart Disease Risk Inputs</div>
+        <div class="pred-card-desc">Based on the Cleveland Heart Disease dataset — 13 clinical features</div>
+      </div>
+    </div>
+    <div class="pred-card-body">
+      <div class="inp-grid">
+
+        <!-- Age -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Age</span>
+            <span class="inp-tooltip">Normal: 30–65</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="age" id="inp-age" placeholder="e.g. 52" min="1" max="120" required
+                   value="{{ request.form.age if request.form.age else (details.age if details else '') }}">
+            <div class="inp-unit">years</div>
+          </div>
+        </div>
+
+        <!-- Sex -->
+        <div class="inp-group">
+          <div class="inp-label-row"><span class="inp-label">Biological Sex</span></div>
+          <div class="toggle-row">
+            <div class="tog-btn tog-sel" id="sex-male" onclick="setToggle('sex','1','sex-male','sex-female')">👨 Male</div>
+            <div class="tog-btn"         id="sex-female" onclick="setToggle('sex','0','sex-female','sex-male')">👩 Female</div>
+          </div>
+          <input type="hidden" name="sex" id="val-sex" value="1">
+        </div>
+
+        <!-- Chest Pain -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Chest Pain Type</span>
+            <span class="inp-tooltip">0 = most typical</span>
+          </div>
+          <div class="inp-with-unit">
+            <select name="cp">
+              <option value="0">0 – Typical Angina</option>
+              <option value="1">1 – Atypical Angina</option>
+              <option value="2">2 – Non-anginal Pain</option>
+              <option value="3">3 – Asymptomatic</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Resting BP -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Resting Blood Pressure</span>
+            <span class="inp-tooltip">Normal: &lt;120</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="trestbps" placeholder="e.g. 130" min="80" max="220">
+            <div class="inp-unit">mmHg</div>
+          </div>
+        </div>
+
+        <!-- Cholesterol -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Cholesterol</span>
+            <span class="inp-tooltip">Normal: &lt;200</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="chol" placeholder="e.g. 240" min="100" max="600">
+            <div class="inp-unit">mg/dL</div>
+          </div>
+        </div>
+
+        <!-- Fasting Blood Sugar -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Fasting Blood Sugar &gt;120</span>
+            <span class="inp-tooltip">after 8h fast</span>
+          </div>
+          <div class="toggle-row">
+            <div class="tog-btn tog-sel" id="fbs-no"  onclick="setToggle('fbs','0','fbs-no','fbs-yes')">✅ No</div>
+            <div class="tog-btn"         id="fbs-yes" onclick="setToggle('fbs','1','fbs-yes','fbs-no')">⚠️ Yes</div>
+          </div>
+          <input type="hidden" name="fbs" id="val-fbs" value="0">
+        </div>
+
+        <!-- Resting ECG -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Resting ECG Result</span>
+            <span class="inp-tooltip">heart rhythm test</span>
+          </div>
+          <div class="inp-with-unit">
+            <select name="restecg">
+              <option value="0">0 – Normal</option>
+              <option value="1">1 – ST-T Abnormality</option>
+              <option value="2">2 – LV Hypertrophy</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Max HR -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Max Heart Rate</span>
+            <span class="inp-tooltip">Normal: 100–180</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="thalach" placeholder="e.g. 160" min="50" max="220">
+            <div class="inp-unit">bpm</div>
+          </div>
+        </div>
+
+        <!-- Exercise Angina -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Exercise-Induced Angina</span>
+          </div>
+          <div class="toggle-row">
+            <div class="tog-btn tog-sel" id="exang-no"  onclick="setToggle('exang','0','exang-no','exang-yes')">✅ No</div>
+            <div class="tog-btn"         id="exang-yes" onclick="setToggle('exang','1','exang-yes','exang-no')">⚠️ Yes</div>
+          </div>
+          <input type="hidden" name="exang" id="val-exang" value="0">
+        </div>
+
+        <!-- Oldpeak -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Oldpeak (ST Depression)</span>
+            <span class="inp-tooltip">Normal: 0–1</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="oldpeak" placeholder="e.g. 1.4" step="0.1" min="0" max="10">
+            <div class="inp-unit">mm</div>
+          </div>
+        </div>
+
+        <!-- Slope -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">ST Segment Slope</span>
+          </div>
+          <div class="inp-with-unit">
+            <select name="slope">
+              <option value="0">0 – Upsloping</option>
+              <option value="1">1 – Flat</option>
+              <option value="2">2 – Downsloping</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CA -->
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Major Vessels (CA)</span>
+            <span class="inp-tooltip">0 = best</span>
+          </div>
+          <div class="inp-with-unit">
+            <select name="ca">
+              <option value="0">0 vessels</option>
+              <option value="1">1 vessel</option>
+              <option value="2">2 vessels</option>
+              <option value="3">3 vessels</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Thal -->
+        <div class="inp-group" style="grid-column: span 2;">
+          <div class="inp-label-row">
+            <span class="inp-label">Thalassemia (Thal)</span>
+            <span class="inp-tooltip">blood disorder</span>
+          </div>
+          <div class="toggle-row">
+            <div class="tog-btn tog-sel" id="thal-1" onclick="setThal('1')">1 – Normal</div>
+            <div class="tog-btn"         id="thal-2" onclick="setThal('2')">2 – Fixed Defect</div>
+            <div class="tog-btn"         id="thal-3" onclick="setThal('3')">3 – Reversible Defect</div>
+          </div>
+          <input type="hidden" name="thal" id="val-thal" value="1">
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ DIABETES PANEL ══════════════ -->
+<div class="form-panel" id="panel-diabetes">
+  <div class="pred-card">
+    <div class="pred-card-header">
+      <div class="pred-card-icon" style="background:#fefce8;">🩸</div>
+      <div>
+        <div class="pred-card-title">Diabetes Risk Inputs</div>
+        <div class="pred-card-desc">Based on Pima Indians Diabetes dataset — 8 clinical features</div>
+      </div>
+    </div>
+    <div class="pred-card-body">
+      <div class="inp-grid">
+
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Pregnancies</span>
+            <span class="inp-tooltip">0 if male</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="pregnancies" placeholder="e.g. 2" min="0" max="20" value="0">
+            <div class="inp-unit">count</div>
+          </div>
+        </div>
+
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Glucose Level</span>
+            <span class="inp-tooltip">Normal: 70–99</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="glucose" placeholder="e.g. 110" min="40" max="300">
+            <div class="inp-unit">mg/dL</div>
+          </div>
+        </div>
+
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Blood Pressure (Diastolic)</span>
+            <span class="inp-tooltip">Normal: &lt;80</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="blood_pressure" placeholder="e.g. 72" min="30" max="130">
+            <div class="inp-unit">mmHg</div>
+          </div>
+        </div>
+
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Skin Thickness</span>
+            <span class="inp-tooltip">tricep fold</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="skin_thickness" placeholder="e.g. 20" min="0" max="100">
+            <div class="inp-unit">mm</div>
+          </div>
+        </div>
+
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Insulin Level</span>
+            <span class="inp-tooltip">Normal: 16–166</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="insulin" placeholder="e.g. 85" min="0" max="900">
+            <div class="inp-unit">mu U/ml</div>
+          </div>
+        </div>
+
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">BMI</span>
+            <span class="inp-tooltip">Normal: 18.5–24.9</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="bmi_val" placeholder="e.g. 27.5" step="0.1" min="10" max="70"
+                   value="{{ details.weight / ((details.height/100) * (details.height/100)) | round(1) if details and details.weight and details.height else '' }}">
+            <div class="inp-unit">kg/m²</div>
+          </div>
+        </div>
+
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Diabetes Pedigree</span>
+            <span class="inp-tooltip">family history score</span>
+          </div>
+          <div class="inp-with-unit">
+            <input type="number" name="dpf" placeholder="e.g. 0.45" step="0.01" min="0.08" max="2.5">
+            <div class="inp-unit">DPF</div>
+          </div>
+        </div>
+
+        <div class="inp-group">
+          <div class="inp-label-row">
+            <span class="inp-label">Age</span>
+            <span class="inp-tooltip">shared with heart</span>
+          </div>
+          <div class="inp-with-unit" style="background:var(--bg); opacity:.7;">
+            <input type="number" id="diab-age-display" placeholder="from heart tab"
+                   readonly style="background:var(--bg); color:var(--muted);">
+            <div class="inp-unit">years</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="alert alert-info" style="margin-top:16px; font-size:13px;">
+        ℹ️ Age is taken automatically from the Heart Disease tab. Fill that in first.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ BOTH PANEL ══════════════ -->
+<div class="form-panel" id="panel-both">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+    <div class="pred-card">
+      <div class="pred-card-header">
+        <div class="pred-card-icon" style="background:#fff1f2;">❤️</div>
+        <div>
+          <div class="pred-card-title">Heart Inputs</div>
+          <div class="pred-card-desc">All fields from Heart tab apply here too</div>
+        </div>
+      </div>
+      <div class="pred-card-body" style="padding:16px;">
+        <p style="font-size:13px; color:var(--muted); text-align:center; padding:12px 0;">
+          Fill in the <strong>Heart Disease tab</strong> first, then switch here to submit both together.
+        </p>
+        <a onclick="switchTabByName('heart')" class="btn btn-ghost" style="width:100%; justify-content:center; cursor:pointer;">
+          ← Go to Heart Tab
+        </a>
+      </div>
+    </div>
+    <div class="pred-card">
+      <div class="pred-card-header">
+        <div class="pred-card-icon" style="background:#fefce8;">🩸</div>
+        <div>
+          <div class="pred-card-title">Diabetes Inputs</div>
+          <div class="pred-card-desc">All fields from Diabetes tab apply here too</div>
+        </div>
+      </div>
+      <div class="pred-card-body" style="padding:16px;">
+        <p style="font-size:13px; color:var(--muted); text-align:center; padding:12px 0;">
+          Fill in the <strong>Diabetes tab</strong> first, then come back here to run both predictions at once.
+        </p>
+        <a onclick="switchTabByName('diabetes')" class="btn btn-ghost" style="width:100%; justify-content:center; cursor:pointer;">
+          → Go to Diabetes Tab
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Submit Bar ── -->
+<div class="submit-bar">
+  <div class="submit-info">
+    <span style="font-size:20px;">🔬</span>
+    <span>Our ML models are trained on real clinical datasets for accurate predictions.</span>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a href="/dashboard" class="btn btn-ghost">Cancel</a>
+    <button type="submit" class="btn" style="padding:12px 32px; font-size:15px;">
+      🔍 Run AI Prediction
+    </button>
+  </div>
+</div>
+
+</form>
+
+<!-- ══════════════ RESULTS ══════════════ -->
+{% if result %}
+<div class="results-wrap">
+
+  <!-- Overall Summary Banner -->
+  {% if result.heart_risk == 1 and result.diabetes_risk == 1 %}
+  <div class="overall-card" style="background:#fef2f2; border:2px solid #fecaca; color:#991b1b;">
+    <div class="overall-icon">🚨</div>
+    <div>
+      <div class="overall-title">High Risk Detected for Both Conditions</div>
+      <div class="overall-desc">Your results indicate elevated risk for both heart disease and diabetes. Please consult a doctor immediately for a full clinical evaluation.</div>
+    </div>
+  </div>
+  {% elif result.heart_risk == 1 or result.diabetes_risk == 1 %}
+  <div class="overall-card" style="background:#fffbeb; border:2px solid #fde68a; color:#92400e;">
+    <div class="overall-icon">⚠️</div>
+    <div>
+      <div class="overall-title">Elevated Risk Detected</div>
+      <div class="overall-desc">One of your predictions shows high risk. Early detection is key — consult a healthcare professional for further testing and guidance.</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="overall-card" style="background:#f0fdf4; border:2px solid #bbf7d0; color:#166534;">
+    <div class="overall-icon">✅</div>
+    <div>
+      <div class="overall-title">Low Risk — Looking Good!</div>
+      <div class="overall-desc">Both predictions show low risk. Keep maintaining your healthy lifestyle and schedule regular checkups with your doctor.</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Results Header -->
+  <div class="results-header">
+    <div class="results-title">📊 Prediction Results</div>
+    <div style="font-size:13px; color:var(--muted);">AI analysis complete</div>
+  </div>
+
+  <div class="results-grid">
+
+    <!-- ── Heart Disease Result ── -->
+    <div class="risk-card">
+      <div class="risk-card-top">
+        <div class="risk-card-label">
+          ❤️ Heart Disease Risk
+          <span style="font-size:10px; background:var(--teal-pale); color:var(--teal); padding:2px 8px; border-radius:6px; font-weight:600;">Random Forest ML</span>
+        </div>
+
+        <div class="risk-meter-wrap">
+          <!-- Circular meter -->
+          <div class="risk-circle">
+            {% set h_dash = (result.heart_prob / 100 * 283) | round(1) %}
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="45" fill="none"
+                      stroke="#f1f5f9" stroke-width="10"/>
+              <circle cx="55" cy="55" r="45" fill="none"
+                      stroke="{% if result.heart_prob > 60 %}#ef4444{% elif result.heart_prob > 40 %}#f59e0b{% else %}#22c55e{% endif %}"
+                      stroke-width="10"
+                      stroke-dasharray="{{ h_dash }} 283"
+                      stroke-linecap="round"/>
+            </svg>
+            <div class="risk-circle-center">
+              <div class="risk-pct-num" style="color:{% if result.heart_prob > 60 %}#dc2626{% elif result.heart_prob > 40 %}#ca8a04{% else %}#16a34a{% endif %};">
+                {{ result.heart_prob }}%
+              </div>
+              <div class="risk-pct-lbl">probability</div>
+            </div>
+          </div>
+
+          <div class="risk-verdict">
+            <div class="risk-verdict-badge" style="
+              {% if result.heart_risk == 1 %}background:#fef2f2; color:#dc2626; border:2px solid #fecaca;
+              {% else %}background:#f0fdf4; color:#16a34a; border:2px solid #bbf7d0;{% endif %}">
+              {% if result.heart_risk == 1 %}🔴 High Risk{% else %}✅ Low Risk{% endif %}
+            </div>
+            <div class="risk-verdict-text">
+              {% if result.heart_risk == 1 %}
+                Your clinical values suggest elevated cardiovascular risk. Consult a cardiologist promptly.
+              {% else %}
+                Your heart disease risk appears low based on the provided values. Maintain a heart-healthy lifestyle.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk level bar -->
+      <div class="risk-level-bar">
+        <div style="font-size:12px; color:var(--muted); margin-bottom:4px;">Risk Level</div>
+        <div class="risk-level-track">
+          <div class="risk-level-marker" style="left:{{ result.heart_prob }}%;"></div>
+        </div>
+        <div class="risk-level-labels">
+          <span>Low (0%)</span>
+          <span>Moderate (50%)</span>
+          <span>High (100%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Diabetes Result ── -->
+    <div class="risk-card">
+      <div class="risk-card-top">
+        <div class="risk-card-label">
+          🩸 Diabetes Risk
+          <span style="font-size:10px; background:var(--teal-pale); color:var(--teal); padding:2px 8px; border-radius:6px; font-weight:600;">Logistic Regression ML</span>
+        </div>
+
+        <div class="risk-meter-wrap">
+          <div class="risk-circle">
+            {% set d_dash = (result.diabetes_prob / 100 * 283) | round(1) %}
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="45" fill="none"
+                      stroke="#f1f5f9" stroke-width="10"/>
+              <circle cx="55" cy="55" r="45" fill="none"
+                      stroke="{% if result.diabetes_prob > 60 %}#ef4444{% elif result.diabetes_prob > 40 %}#f59e0b{% else %}#22c55e{% endif %}"
+                      stroke-width="10"
+                      stroke-dasharray="{{ d_dash }} 283"
+                      stroke-linecap="round"/>
+            </svg>
+            <div class="risk-circle-center">
+              <div class="risk-pct-num" style="color:{% if result.diabetes_prob > 60 %}#dc2626{% elif result.diabetes_prob > 40 %}#ca8a04{% else %}#16a34a{% endif %};">
+                {{ result.diabetes_prob }}%
+              </div>
+              <div class="risk-pct-lbl">probability</div>
+            </div>
+          </div>
+
+          <div class="risk-verdict">
+            <div class="risk-verdict-badge" style="
+              {% if result.diabetes_risk == 1 %}background:#fef2f2; color:#dc2626; border:2px solid #fecaca;
+              {% else %}background:#f0fdf4; color:#16a34a; border:2px solid #bbf7d0;{% endif %}">
+              {% if result.diabetes_risk == 1 %}🔴 High Risk{% else %}✅ Low Risk{% endif %}
+            </div>
+            <div class="risk-verdict-text">
+              {% if result.diabetes_risk == 1 %}
+                Your values suggest elevated diabetes risk. Consult an endocrinologist and monitor blood glucose regularly.
+              {% else %}
+                Your diabetes risk appears low. Maintain a balanced diet and active lifestyle to keep it that way.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="risk-level-bar">
+        <div style="font-size:12px; color:var(--muted); margin-bottom:4px;">Risk Level</div>
+        <div class="risk-level-track">
+          <div class="risk-level-marker" style="left:{{ result.diabetes_prob }}%;"></div>
+        </div>
+        <div class="risk-level-labels">
+          <span>Low (0%)</span>
+          <span>Moderate (50%)</span>
+          <span>High (100%)</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Recommendations ── -->
+  <div class="results-header" style="margin-top:8px;">
+    <div class="results-title" style="font-size:18px;">💡 Personalised Recommendations</div>
+  </div>
+
+  <div class="reco-grid">
+
+    <!-- Heart recommendations -->
+    <div class="reco-card">
+      <h3 style="margin-bottom:14px;">❤️ Heart Health Actions</h3>
+      {% if result.heart_risk == 1 %}
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#fef2f2;">🏥</div>
+        <div>
+          <div class="reco-title">See a Cardiologist</div>
+          <div class="reco-desc">Schedule an appointment promptly for ECG, stress test and further evaluation.</div>
+        </div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#fff7ed;">🧂</div>
+        <div>
+          <div class="reco-title">Reduce Sodium Intake</div>
+          <div class="reco-desc">Limit salt to &lt;2,300mg/day. Avoid processed and packaged foods.</div>
+        </div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#fefce8;">🚭</div>
+        <div>
+          <div class="reco-title">Quit Smoking</div>
+          <div class="reco-desc">Smoking doubles heart disease risk. Quitting reduces risk by 50% within a year.</div>
+        </div>
+      </div>
+      {% else %}
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#f0fdf4;">🏃</div>
+        <div>
+          <div class="reco-title">Maintain Regular Exercise</div>
+          <div class="reco-desc">150 min/week of moderate cardio keeps your heart strong and healthy.</div>
+        </div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#f0fdf4;">🥗</div>
+        <div>
+          <div class="reco-title">Heart-Healthy Diet</div>
+          <div class="reco-desc">Eat more omega-3 rich foods, fruits, vegetables and whole grains.</div>
+        </div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#f0fdf4;">🩺</div>
+        <div>
+          <div class="reco-title">Annual Checkup</div>
+          <div class="reco-desc">Keep up with annual BP, cholesterol and ECG screenings.</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Diabetes recommendations -->
+    <div class="reco-card">
+      <h3 style="margin-bottom:14px;">🩸 Diabetes Prevention Actions</h3>
+      {% if result.diabetes_risk == 1 %}
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#fef2f2;">🏥</div>
+        <div>
+          <div class="reco-title">Consult an Endocrinologist</div>
+          <div class="reco-desc">Get an HbA1c test and fasting glucose test done immediately.</div>
+        </div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#fff7ed;">🍬</div>
+        <div>
+          <div class="reco-title">Cut Sugar & Refined Carbs</div>
+          <div class="reco-desc">Avoid sugary drinks, white bread, white rice and processed sweets.</div>
+        </div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#fefce8;">⚖️</div>
+        <div>
+          <div class="reco-title">Achieve Healthy Weight</div>
+          <div class="reco-desc">Losing even 5–7% of body weight significantly reduces diabetes risk.</div>
+        </div>
+      </div>
+      {% else %}
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#f0fdf4;">💧</div>
+        <div>
+          <div class="reco-title">Stay Hydrated</div>
+          <div class="reco-desc">Drink 8–10 glasses of water daily to support healthy blood sugar levels.</div>
+        </div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#f0fdf4;">🥦</div>
+        <div>
+          <div class="reco-title">Eat Low-GI Foods</div>
+          <div class="reco-desc">Choose whole grains, legumes and vegetables to keep blood sugar stable.</div>
+        </div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-icon" style="background:#f0fdf4;">🩸</div>
+        <div>
+          <div class="reco-title">Annual Blood Sugar Test</div>
+          <div class="reco-desc">Regular fasting glucose and HbA1c screening catches issues early.</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <p class="text-sm text-muted" style="margin-top:8px; text-align:center;">
+    ⚠️ These predictions are based on ML models and are for informational purposes only. Always consult a qualified doctor for diagnosis and treatment.
+  </p>
+
+</div>
+{% endif %}
+
+<script>
+// ── Tab switching ────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function switchTabByName(name) {
+  document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(name === 'heart' ? 'heart' : 'diabetes'))
+      b.classList.add('active');
+  });
+}
+
+// ── Toggle buttons ────────────────────────────────────────────
+function setToggle(field, val, activeId, inactiveId) {
+  document.getElementById('val-' + field).value = val;
+  document.getElementById(activeId).className   = 'tog-btn tog-sel';
+  document.getElementById(inactiveId).className = 'tog-btn';
+  // Sync age to diabetes tab
+  if (field === 'age') syncAge();
+}
+
+function setThal(val) {
+  document.getElementById('val-thal').value = val;
+  ['thal-1','thal-2','thal-3'].forEach(id => {
+    document.getElementById(id).className = 'tog-btn';
+  });
+  document.getElementById('thal-' + val).className = 'tog-btn tog-sel';
+}
+
+// ── Sync age from heart tab to diabetes tab ───────────────────
+document.getElementById('inp-age').addEventListener('input', syncAge);
+function syncAge() {
+  const v = document.getElementById('inp-age').value;
+  document.getElementById('diab-age-display').value = v || '';
+  document.getElementById('diab-age-display').placeholder = v ? v + ' years' : 'fill heart tab first';
+}
+
+// ── Scroll to results if present ─────────────────────────────
+{% if result %}
+window.addEventListener('load', () => {
+  document.querySelector('.results-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+{% endif %}
+
+// ── Init existing form values ─────────────────────────────────
+window.addEventListener('load', () => {
+  syncAge();
+  {% if request.form.sex == '0' %}
+    setToggle('sex', '0', 'sex-female', 'sex-male');
+  {% endif %}
+  {% if request.form.fbs == '1' %}
+    setToggle('fbs', '1', 'fbs-yes', 'fbs-no');
+  {% endif %}
+  {% if request.form.exang == '1' %}
+    setToggle('exang', '1', 'exang-yes', 'exang-no');
+  {% endif %}
+  {% if request.form.thal %}
+    setThal('{{ request.form.thal }}');
+  {% endif %}
+});
+</script>
+
+{% endblock %}

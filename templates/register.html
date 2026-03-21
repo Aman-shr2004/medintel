@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register – MedIntel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8f5f3;
+      overflow: hidden;
+    }
+
+    /* ── Background — same as login/index ── */
+    .bg {
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(13,148,136,.18) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(15,118,110,.14) 0%, transparent 55%),
+        radial-gradient(ellipse at 60% 90%, rgba(20,184,166,.12) 0%, transparent 50%),
+        linear-gradient(135deg, #d4eeea 0%, #e8f5f3 40%, #cce8e3 100%);
+      z-index: 0;
+    }
+
+    .grid-pattern {
+      position: fixed; inset: 0;
+      background-image: radial-gradient(rgba(13,148,136,.08) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(90px); opacity: .25;
+      z-index: 0; pointer-events: none;
+      animation: orbFloat ease-in-out infinite;
+    }
+    .orb1 { width:350px; height:350px; background:#5eead4; top:-80px; left:-80px; animation-duration:12s; }
+    .orb2 { width:250px; height:250px; background:#14b8a6; bottom:-60px; right:-60px; animation-duration:15s; }
+
+    @keyframes orbFloat {
+      0%,100% { transform: translate(0,0); }
+      50%      { transform: translate(20px,-15px); }
+    }
+
+    /* ── Card — same as login ── */
+    .card {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 440px;
+      margin: 20px;
+      background: rgba(255,255,255,.75);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 24px;
+      padding: 40px 40px 36px;
+      box-shadow: 0 20px 60px rgba(13,148,136,.12), 0 4px 16px rgba(0,0,0,.06);
+      animation: cardIn .6s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity:0; transform: translateY(24px) scale(.97); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Logo ── */
+    .logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 28px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 58px; height: 58px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      margin-bottom: 13px;
+      box-shadow: 0 6px 24px rgba(20,184,166,.4);
+    }
+
+    .logo-name {
+      font-family: 'Fraunces', serif;
+      font-size: 26px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 4px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* ── Form heading ── */
+    .form-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .form-sub {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 22px;
+    }
+
+    /* ── Input group ── */
+    .input-group { margin-bottom: 13px; }
+
+    .input-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 7px;
+      display: block;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      transition: border-color .2s, background .2s;
+      overflow: hidden;
+    }
+
+    .input-wrap:focus-within {
+      border-color: #14b8a6;
+      background: #f0fdfa;
+      box-shadow: 0 0 0 3px rgba(20,184,166,.12);
+    }
+
+    .input-icon {
+      padding: 0 14px;
+      font-size: 15px;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .input-wrap input,
+    .input-wrap select {
+      flex: 1;
+      padding: 12px 14px 12px 0;
+      background: transparent;
+      border: none;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: #0f172a;
+      outline: none;
+      margin: 0;
+      width: 100%;
+    }
+
+    .input-wrap input::placeholder { color: #94a3b8; }
+    .input-wrap select { cursor: pointer; color: #0f172a; }
+    .input-wrap select option { color: #0f172a; background: #fff; }
+
+    /* ── Role toggle ── */
+    .role-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+
+    .role-btn {
+      flex: 1;
+      padding: 11px 10px;
+      border-radius: 11px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      text-align: center;
+      transition: all .18s;
+      width: auto;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .role-btn:hover {
+      border-color: #14b8a6;
+      background: #f0fdfa;
+      color: #0f766e;
+    }
+
+    .role-btn.active {
+      border-color: #14b8a6;
+      background: #f0fdfa;
+      color: #0f766e;
+      box-shadow: 0 0 0 3px rgba(20,184,166,.1);
+    }
+
+    /* Hidden role input */
+    #role-input { display: none; }
+
+    /* ── Error box ── */
+    .error-box {
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #dc2626;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Submit button — same as login ── */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: all .2s;
+      box-shadow: 0 4px 20px rgba(20,184,166,.35);
+      letter-spacing: .2px;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(20,184,166,.5);
+      background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+    }
+
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ── Bottom link ── */
+    .bottom-link {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .bottom-link a {
+      color: #0d9488;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .bottom-link a:hover { color: #0f766e; }
+  </style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="grid-pattern"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="card">
+
+  <!-- Logo -->
+  <a href="/" class="logo">
+    <div class="logo-icon">🩺</div>
+    <div class="logo-name">MedIntel</div>
+    <div class="logo-sub">Health Monitor</div>
+  </a>
+
+  <div class="form-title">Create your account ✨</div>
+  <div class="form-sub">Join MedIntel to start monitoring your health</div>
+
+  {% if error %}
+  <div class="error-box">⚠️ &nbsp;{{ error }}</div>
+  {% endif %}
+
+  <form method="POST">
+
+    <!-- Name -->
+    <div class="input-group">
+      <label class="input-label">Full Name</label>
+      <div class="input-wrap">
+        <div class="input-icon">🧑</div>
+        <input type="text" name="name" placeholder="e.g. Aman Sharma" required>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="input-group">
+      <label class="input-label">Email Address</label>
+      <div class="input-wrap">
+        <div class="input-icon">✉️</div>
+        <input type="email" name="email" placeholder="you@example.com" required>
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="input-group">
+      <label class="input-label">Password</label>
+      <div class="input-wrap">
+        <div class="input-icon">🔒</div>
+        <input type="password" name="password" placeholder="Choose a strong password" required>
+      </div>
+    </div>
+
+    <!-- Role toggle -->
+    <div class="input-group">
+      <label class="input-label">Register As</label>
+      <div class="role-row">
+        <div class="role-btn active" id="btn-patient" onclick="selectRole('patient')">🧑 Patient</div>
+        <div class="role-btn"        id="btn-doctor"  onclick="selectRole('doctor')">👨‍⚕️ Doctor</div>
+      </div>
+      <input type="hidden" name="role" id="role-input" value="patient">
+    </div>
+
+    <!-- Specialization (only for doctors) -->
+    <div class="input-group" id="spec-group" style="display:none;">
+      <label class="input-label">Specialization</label>
+      <div class="input-wrap">
+        <div class="input-icon">🏥</div>
+        <select name="specialization" id="spec-select">
+          <option value="General Physician">🩺 General Physician</option>
+          <option value="Cardiologist">❤️ Cardiologist</option>
+          <option value="Endocrinologist">🩸 Endocrinologist</option>
+          <option value="Neurologist">🧠 Neurologist</option>
+          <option value="Orthopedist">🦴 Orthopedist</option>
+          <option value="Dermatologist">🧴 Dermatologist</option>
+          <option value="Pediatrician">👶 Pediatrician</option>
+          <option value="Psychiatrist">🧘 Psychiatrist</option>
+        </select>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit">✨ Create Account</button>
+
+  </form>
+
+  <div class="bottom-link">
+    Already have an account? <a href="/login">Sign in →</a>
+  </div>
+
+</div>
+
+<script>
+function selectRole(role) {
+  document.getElementById('role-input').value = role;
+  document.getElementById('btn-patient').className = 'role-btn' + (role === 'patient' ? ' active' : '');
+  document.getElementById('btn-doctor').className  = 'role-btn' + (role === 'doctor'  ? ' active' : '');
+  document.getElementById('spec-group').style.display = role === 'doctor' ? 'block' : 'none';
+}
+</script>
+
+</body>
+</html>

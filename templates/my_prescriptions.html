@@ -1,0 +1,585 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.rx-page-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+}
+
+.empty-state {
+  text-align: center; padding: 60px 32px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px;
+}
+
+.rx-stats-bar {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 24px;
+}
+
+.rx-stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+  display: flex; align-items: center; gap: 14px;
+  transition: all .2s;
+}
+
+.rx-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13,148,136,.1);
+  border-color: #99f6e4;
+}
+
+.rx-stat-icon {
+  width: 46px; height: 46px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+
+.rx-stat-val {
+  font-family: 'Fraunces', serif;
+  font-size: 28px; font-weight: 700; color: var(--teal); line-height: 1;
+}
+
+.rx-stat-lbl { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+.rx-layout {
+  display: grid; grid-template-columns: 1fr 300px;
+  gap: 20px; align-items: start;
+}
+
+.rx-toolbar {
+  display: flex; align-items: center;
+  gap: 10px; margin-bottom: 18px; flex-wrap: wrap;
+}
+
+.rx-search {
+  flex: 1; padding: 10px 16px 10px 40px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  color: var(--text); background: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: 12px center;
+  transition: border-color .15s; min-width: 200px; margin: 0;
+}
+
+.rx-search:focus {
+  outline: none; border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,148,136,.1);
+}
+
+/* Prescription Card */
+.rx-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+  transition: all .22s;
+}
+
+.rx-card:hover {
+  box-shadow: 0 6px 24px rgba(13,148,136,.1);
+  transform: translateY(-2px); border-color: #99f6e4;
+}
+
+.rx-card-header {
+  padding: 16px 20px;
+  background: linear-gradient(90deg, #f0fdfa, #f8fefd);
+  border-bottom: 1px solid #e0faf5;
+  display: flex; align-items: center; gap: 14px;
+}
+
+.rx-num-badge {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--teal); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; flex-shrink: 0;
+}
+
+.rx-header-info { flex: 1; min-width: 0; }
+.rx-doctor-name { font-size: 14px; font-weight: 700; color: var(--text); }
+
+.rx-date-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 3px; flex-wrap: wrap;
+}
+
+.rx-date { font-size: 12px; color: var(--muted); }
+
+.rx-new-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 6px;
+  background: #f0fdf4; color: #16a34a;
+}
+
+.rx-card-body { padding: 20px; }
+
+.rx-section-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: var(--muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.rx-section-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.medicine-list {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;
+}
+
+.medicine-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border-radius: 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  transition: border-color .15s;
+}
+
+.medicine-item:hover { border-color: #99f6e4; }
+
+.med-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--teal-pale); border: 1px solid #99f6e4;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0; margin-top: 1px;
+}
+
+.med-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+.rx-notes-box {
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 10px; padding: 14px; margin-bottom: 16px;
+}
+
+.rx-notes-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: #92400e; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.rx-notes-text { font-size: 13px; color: #78350f; line-height: 1.6; }
+
+.rx-actions {
+  display: flex; gap: 8px; padding-top: 14px;
+  border-top: 1px solid var(--border); align-items: center;
+}
+
+.btn-print {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 9px;
+  background: var(--teal-pale); border: 1.5px solid #99f6e4;
+  color: var(--teal-dark); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .15s; width: auto;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.btn-print:hover { background: #ccfbf1; transform: translateY(-1px); }
+
+/* Sidebar */
+.right-col { display: flex; flex-direction: column; gap: 16px; }
+
+.side-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+
+.side-card-hdr {
+  padding: 13px 18px; background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.side-card-body { padding: 16px; }
+
+.doc-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; border-radius: 10px;
+  background: var(--bg); margin-bottom: 8px;
+  border: 1px solid var(--border);
+}
+.doc-item:last-child { margin-bottom: 0; }
+
+.doc-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--teal-pale); border: 1.5px solid #99f6e4;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+
+.doc-name  { font-size: 13px; font-weight: 600; color: var(--text); }
+.doc-email { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+.doc-rx-badge {
+  margin-left: auto; font-size: 11px; font-weight: 700;
+  background: var(--teal-pale); color: var(--teal-dark);
+  padding: 3px 8px; border-radius: 6px;
+}
+
+.tip-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px; background: var(--bg); border-radius: 9px;
+  border: 1px solid var(--border); margin-bottom: 8px;
+  font-size: 12px; color: var(--muted); line-height: 1.4;
+}
+.tip-item:last-child { margin-bottom: 0; }
+
+.qa-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  text-decoration: none; color: var(--text);
+  font-size: 13px; font-weight: 600; transition: all .15s;
+  margin-bottom: 8px;
+}
+.qa-link:last-child { margin-bottom: 0; }
+.qa-link:hover {
+  background: var(--teal-pale); border-color: var(--teal);
+  color: var(--teal-dark); transform: translateX(3px);
+}
+
+@media print {
+  .rx-page-header, .rx-stats-bar, .rx-toolbar,
+  .rx-actions, .right-col, .sidebar, .hamburger,
+  .sidebar-close, .sidebar-overlay { display: none !important; }
+  .rx-layout { grid-template-columns: 1fr !important; }
+  .rx-card { break-inside: avoid; box-shadow: none !important; border: 1px solid #ddd !important; }
+  body { background: #fff !important; }
+  .main { margin-left: 0 !important; padding: 20px !important; }
+}
+
+@media (max-width: 900px) {
+  .rx-layout { grid-template-columns: 1fr; }
+  .right-col { display: none; }
+  .rx-stats-bar { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+<!-- Header -->
+<div class="rx-page-header">
+  <div>
+    <h2>💊 My Prescriptions</h2>
+    <div style="font-size:13px; color:var(--muted); margin-top:4px;">
+      Medicines prescribed by your doctors
+    </div>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button onclick="window.print()" class="btn btn-ghost">🖨️ Print All</button>
+    <a href="/appointment" class="btn">📅 Book Appointment</a>
+  </div>
+</div>
+
+{% if pres_data %}
+
+<!-- Stats -->
+<div class="rx-stats-bar">
+  <div class="rx-stat-card">
+    <div class="rx-stat-icon" style="background:#f0fdfa;">💊</div>
+    <div>
+      <div class="rx-stat-val">{{ pres_data | length }}</div>
+      <div class="rx-stat-lbl">Total Prescriptions</div>
+    </div>
+  </div>
+  <div class="rx-stat-card">
+    <div class="rx-stat-icon" style="background:#fefce8;">👨‍⚕️</div>
+    <div>
+      <div class="rx-stat-val" id="doc-count">—</div>
+      <div class="rx-stat-lbl">Doctors</div>
+    </div>
+  </div>
+  <div class="rx-stat-card">
+    <div class="rx-stat-icon" style="background:#f5f3ff;">📅</div>
+    <div>
+      <div class="rx-stat-val" style="font-size:16px;">
+        {{ pres_data[0].pres.date.strftime('%d %b %Y') }}
+      </div>
+      <div class="rx-stat-lbl">Latest Prescription</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="rx-layout">
+
+  <!-- Left: List -->
+  <div>
+    <div class="rx-toolbar">
+      <input type="text" class="rx-search" id="rx-search"
+        placeholder="Search medicines or doctor name…"
+        oninput="searchRx(this.value)">
+      <span style="font-size:13px; color:var(--muted); white-space:nowrap;">
+        {{ pres_data | length }} prescription(s)
+      </span>
+    </div>
+
+    <div id="rx-list">
+      {% for item in pres_data %}
+      <div class="rx-card" id="rx-{{ loop.index }}"
+        data-search="{{ (item.doctor.name | lower) if item.doctor else '' }} {{ item.pres.medicines | lower }}"
+        data-doctor="{{ item.doctor.name if item.doctor else '' }}">
+
+        <div class="rx-card-header">
+          <div class="rx-num-badge">{{ loop.index }}</div>
+          <div class="rx-header-info">
+            <div class="rx-doctor-name">
+              👨‍⚕️ Dr. {{ item.doctor.name | title if item.doctor else 'Unknown Doctor' }}
+            </div>
+            <div class="rx-date-row">
+              <span class="rx-date">📅 {{ item.pres.date.strftime('%d %B %Y') }}</span>
+              <span class="rx-date">🕐 {{ item.pres.date.strftime('%I:%M %p') }}</span>
+              {% if loop.index == 1 %}
+              <span class="rx-new-badge">✨ Latest</span>
+              {% endif %}
+            </div>
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;">Rx</div>
+            <div style="font-size:15px; font-weight:800; color:var(--teal);">#{{ '%03d' % loop.index }}</div>
+          </div>
+        </div>
+
+        <div class="rx-card-body">
+
+          <div class="rx-section-label">💊 Medicines & Dosage</div>
+          <div class="medicine-list">
+            {% for med in item.pres.medicines.split('\n') %}
+              {% if med.strip() %}
+              <div class="medicine-item">
+                <div class="med-icon">💊</div>
+                <div class="med-text">{{ med.strip() }}</div>
+              </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {% if item.pres.notes and item.pres.notes.strip() %}
+          <div class="rx-notes-box">
+            <div class="rx-notes-title">📝 Doctor's Instructions</div>
+            <div class="rx-notes-text">{{ item.pres.notes }}</div>
+          </div>
+          {% endif %}
+
+          <div class="rx-actions">
+            <button onclick="printSingle({{ loop.index }})" class="btn-print">
+              🖨️ Print this prescription
+            </button>
+            <span style="margin-left:auto; font-size:11px; color:var(--muted);">
+              ⚠️ Consult your doctor before changing medicines
+            </span>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div id="no-results" style="display:none; text-align:center; padding:40px; color:var(--muted);">
+      <div style="font-size:36px; margin-bottom:10px;">🔍</div>
+      No prescriptions match your search.
+    </div>
+
+  </div>
+
+  <!-- Right Sidebar -->
+  <div class="right-col">
+
+    <!-- Your Doctors -->
+    <div class="side-card">
+      <div class="side-card-hdr">👨‍⚕️ Prescribed By</div>
+      <div class="side-card-body" id="doctors-list">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- Medicine Tips -->
+    <div class="side-card">
+      <div class="side-card-hdr">💡 Medicine Tips</div>
+      <div class="side-card-body">
+        <div class="tip-item"><span style="font-size:16px;flex-shrink:0;">⏰</span>Take medicines at the same time every day for best results.</div>
+        <div class="tip-item"><span style="font-size:16px;flex-shrink:0;">🥛</span>Most medicines should be taken with a full glass of water.</div>
+        <div class="tip-item"><span style="font-size:16px;flex-shrink:0;">🍽️</span>Check if medicine is to be taken before or after meals.</div>
+        <div class="tip-item"><span style="font-size:16px;flex-shrink:0;">⚠️</span>Never stop medicines without consulting your doctor first.</div>
+        <div class="tip-item"><span style="font-size:16px;flex-shrink:0;">📱</span>Set phone reminders to never miss a dose.</div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="side-card">
+      <div class="side-card-hdr">⚡ Quick Actions</div>
+      <div class="side-card-body">
+        <a href="/appointment" class="qa-link">
+          <span style="font-size:20px;">📅</span>
+          <div>
+            <div>Book Appointment</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:400;">Schedule a doctor visit</div>
+          </div>
+        </a>
+        <a href="/chatbot" class="qa-link">
+          <span style="font-size:20px;">💬</span>
+          <div>
+            <div>Ask Health Chatbot</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:400;">Medicine related questions</div>
+          </div>
+        </a>
+        <a href="/dashboard" class="qa-link">
+          <span style="font-size:20px;">🏠</span>
+          <div>
+            <div>Go to Dashboard</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:400;">Back to home</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Warning -->
+    <div style="background:#fef2f2; border:1.5px solid #fecaca; border-radius:12px; padding:14px 16px;">
+      <div style="font-size:12px; font-weight:700; color:#dc2626; margin-bottom:6px;">⚠️ Important</div>
+      <div style="font-size:12px; color:#991b1b; line-height:1.6;">
+        These prescriptions are for reference only. Always follow your doctor's advice and never self-medicate.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% else %}
+
+<!-- Empty State -->
+<div class="empty-state">
+  <div style="font-size:64px; margin-bottom:16px;">💊</div>
+  <div style="font-family:'Fraunces',serif; font-size:22px; font-weight:700; color:var(--text);">No Prescriptions Yet</div>
+  <div style="font-size:14px; color:var(--muted); margin-top:8px; max-width:340px; margin-left:auto; margin-right:auto; line-height:1.6;">
+    Your doctor hasn't written any prescriptions yet. Book an appointment to get started.
+  </div>
+  <div style="display:flex; gap:12px; justify-content:center; margin-top:24px; flex-wrap:wrap;">
+    <a href="/appointment" class="btn">📅 Book Appointment</a>
+    <a href="/chatbot" class="btn btn-ghost">💬 Ask Chatbot</a>
+  </div>
+</div>
+
+{% endif %}
+
+<!-- Store prescription data for JS -->
+<script>
+const rxData = [
+  {% for item in pres_data %}
+  {
+    index:    {{ loop.index }},
+    doctor:   "{{ item.doctor.name | title if item.doctor else 'Unknown' }}",
+    email:    "{{ item.doctor.email if item.doctor else '' }}",
+    date:     "{{ item.pres.date.strftime('%d %B %Y') }}",
+    time:     "{{ item.pres.date.strftime('%I:%M %p') }}",
+    meds:     {{ item.pres.medicines | tojson }},
+    notes:    {{ (item.pres.notes or '') | tojson }}
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+
+// Count unique doctors
+const uniqueDocs = [...new Set(rxData.map(r => r.doctor))];
+const docCountEl = document.getElementById('doc-count');
+if (docCountEl) docCountEl.textContent = uniqueDocs.length;
+
+// Build doctors sidebar
+const docsList = document.getElementById('doctors-list');
+if (docsList && rxData.length > 0) {
+  const docMap = {};
+  rxData.forEach(r => {
+    if (!docMap[r.doctor]) docMap[r.doctor] = { email: r.email, count: 0 };
+    docMap[r.doctor].count++;
+  });
+  docsList.innerHTML = Object.entries(docMap).map(([name, info]) => `
+    <div class="doc-item">
+      <div class="doc-avatar">👨‍⚕️</div>
+      <div>
+        <div class="doc-name">Dr. ${name}</div>
+        <div class="doc-email">${info.email}</div>
+      </div>
+      <span class="doc-rx-badge">${info.count} Rx</span>
+    </div>
+  `).join('');
+}
+
+// Search
+function searchRx(query) {
+  const q      = query.toLowerCase().trim();
+  const cards  = document.querySelectorAll('.rx-card');
+  const noRes  = document.getElementById('no-results');
+  let   visible = 0;
+
+  cards.forEach(card => {
+    const data = (card.dataset.search || '').toLowerCase();
+    const show = !q || data.includes(q);
+    card.style.display = show ? 'block' : 'none';
+    if (show) visible++;
+  });
+
+  if (noRes) noRes.style.display = visible === 0 ? 'block' : 'none';
+}
+
+// Print single prescription
+function printSingle(index) {
+  const rx  = rxData.find(r => r.index === index);
+  if (!rx) return;
+
+  const medLines = rx.meds.split('\n').filter(m => m.trim()).map(m =>
+    `<div style="padding:8px 12px; background:#f8fafc; border-radius:6px; margin-bottom:6px; font-size:13px; border-left:3px solid #0d9488;">💊 ${m.trim()}</div>`
+  ).join('');
+
+  const notesHtml = rx.notes.trim() ? `
+    <div style="margin-top:16px;">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#92400e; margin-bottom:6px;">📝 Doctor's Instructions</div>
+      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px; font-size:13px; color:#78350f; line-height:1.6;">${rx.notes}</div>
+    </div>` : '';
+
+  const today = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+
+  const win = window.open('', '_blank', 'width=700,height=700');
+  win.document.write(`<!DOCTYPE html><html><head><title>Prescription #${String(index).padStart(3,'0')}</title>
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Segoe UI',sans-serif; padding:32px; color:#0f172a; }
+    .header { display:flex; justify-content:space-between; align-items:flex-start;
+      border-bottom:2px solid #0d9488; padding-bottom:16px; margin-bottom:20px; }
+    .logo { font-size:20px; font-weight:800; color:#0f766e; }
+    .logo-sub { font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-top:3px; }
+    .rx-num { font-size:24px; font-weight:800; color:#0d9488; }
+    .section-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px;
+      color:#64748b; margin:16px 0 8px; border-bottom:1px solid #e2e8f0; padding-bottom:4px; }
+    .info-row { display:flex; justify-content:space-between; padding:6px 0;
+      border-bottom:1px solid #f1f5f9; font-size:13px; }
+    .info-lbl { color:#64748b; }
+    .info-val { font-weight:600; }
+    .footer { margin-top:40px; padding-top:14px; border-top:1px solid #e2e8f0;
+      font-size:11px; color:#94a3b8; text-align:center; line-height:1.6; }
+  </style>
+  </head><body>
+  <div class="header">
+    <div>
+      <div class="logo">🩺 MedIntel</div>
+      <div class="logo-sub">Smart Health Monitor</div>
+    </div>
+    <div class="rx-num">Rx #${String(index).padStart(3,'0')}</div>
+  </div>
+
+  <div class="section-lbl">Patient & Doctor Info</div>
+  <div class="info-row"><span class="info-lbl">Doctor</span><span class="info-val">Dr. ${rx.doctor}</span></div>
+  <div class="info-row"><span class="info-lbl">Date</span><span class="info-val">${rx.date}</span></div>
+  <div class="info-row"><span class="info-lbl">Time</span><span class="info-val">${rx.time}</span></div>
+  <div class="info-row"><span class="info-lbl">Printed On</span><span class="info-val">${today}</span></div>
+
+  <div class="section-lbl">Medicines & Dosage</div>
+  ${medLines}
+  ${notesHtml}
+
+  <div class="footer">
+    Generated by MedIntel Health Monitoring System<br>
+    ⚠️ Always consult your doctor before making any changes to your medication.
+  </div>
+  </body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); win.close(); }, 500);
+}
+</script>
+
+{% endblock %}

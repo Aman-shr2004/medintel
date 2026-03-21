@@ -1,0 +1,768 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ── Header ── */
+.doc-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+}
+
+.doc-greeting {
+  font-size: 13px; color: var(--muted); margin-top: 4px;
+}
+
+/* ── Stat Cards ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 22px 20px;
+  position: relative; overflow: hidden;
+  transition: all .2s; cursor: default;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(13,148,136,.12);
+  border-color: #99f6e4;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(13,148,136,.06);
+  transform: translate(20px, -20px);
+}
+
+.stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  display: flex; align-items: center;
+  justify-content: center; font-size: 24px;
+  margin-bottom: 14px;
+}
+
+.stat-val {
+  font-family: 'Fraunces', serif;
+  font-size: 32px; font-weight: 700;
+  color: var(--teal); line-height: 1;
+}
+
+.stat-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 500; }
+
+.stat-change {
+  position: absolute; top: 16px; right: 16px;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px;
+}
+
+/* ── Welcome Banner ── */
+.welcome-banner {
+  background: linear-gradient(135deg, #0f766e, #0d9488, #14b8a6);
+  border-radius: 18px; padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+  position: relative; overflow: hidden;
+}
+
+.welcome-banner::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(255,255,255,.06);
+}
+
+.welcome-banner::after {
+  content: '';
+  position: absolute; bottom: -30px; left: 30%;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: rgba(255,255,255,.04);
+}
+
+.wb-title {
+  font-family: 'Fraunces', serif;
+  font-size: 24px; font-weight: 700;
+  color: #fff; z-index: 1;
+}
+
+.wb-sub { font-size: 13px; color: rgba(255,255,255,.75); margin-top: 6px; z-index: 1; }
+
+.wb-stats {
+  display: flex; gap: 24px; z-index: 1;
+}
+
+.wb-stat {
+  text-align: center;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px; padding: 12px 20px;
+}
+
+.wb-stat-num {
+  font-family: 'Fraunces', serif;
+  font-size: 28px; font-weight: 700; color: #fff;
+}
+
+.wb-stat-lbl { font-size: 11px; color: rgba(255,255,255,.7); margin-top: 2px; }
+
+/* ── Main Grid ── */
+.doc-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px; margin-bottom: 24px;
+}
+
+/* ── Section Card ── */
+.sec-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+
+.sec-hdr {
+  padding: 16px 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 10px;
+}
+
+.sec-hdr-left {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.sec-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+
+.sec-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.sec-sub   { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+/* ── Appointment Item ── */
+.appt-item {
+  display: flex; align-items: center;
+  gap: 14px; padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+
+.appt-item:last-child { border-bottom: none; }
+.appt-item:hover { background: rgba(13,148,136,.03); }
+
+.appt-avatar {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+  border: 2px solid #99f6e4;
+}
+
+.appt-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.appt-meta { font-size: 12px; color: var(--muted); margin-top: 2px; display:flex; gap:10px; }
+
+.appt-actions { margin-left: auto; display: flex; gap: 8px; }
+
+.btn-confirm {
+  padding: 7px 14px; border-radius: 9px;
+  background: #f0fdf4; border: 1.5px solid #86efac;
+  color: #16a34a; font-size: 12px; font-weight: 700;
+  cursor: pointer; text-decoration: none; transition: all .15s; width: auto;
+}
+.btn-confirm:hover { background: #dcfce7; transform: translateY(-1px); }
+
+.btn-cancel {
+  padding: 7px 14px; border-radius: 9px;
+  background: #fef2f2; border: 1.5px solid #fca5a5;
+  color: #dc2626; font-size: 12px; font-weight: 700;
+  cursor: pointer; text-decoration: none; transition: all .15s; width: auto;
+}
+.btn-cancel:hover { background: #fee2e2; transform: translateY(-1px); }
+
+.appt-status {
+  margin-left: auto; padding: 4px 12px;
+  border-radius: 8px; font-size: 11px; font-weight: 700;
+}
+
+/* ── Patient Cards ── */
+.patients-section { margin-bottom: 24px; }
+
+.patients-toolbar {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+
+.search-input {
+  padding: 9px 16px 9px 38px;
+  border-radius: 10px; border: 1.5px solid var(--border);
+  font-size: 13px; color: var(--text);
+  background: var(--surface); width: 240px;
+  transition: border-color .15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  margin-bottom: 0;
+}
+
+.search-input:focus { border-color: var(--teal); outline: none; box-shadow: 0 0 0 3px rgba(13,148,136,.1); }
+
+.filter-tabs {
+  display: flex; gap: 6px;
+}
+
+.filter-tab {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface); font-size: 12px;
+  font-weight: 600; color: var(--muted);
+  cursor: pointer; width: auto; transition: all .15s;
+}
+
+.filter-tab.active, .filter-tab:hover {
+  background: var(--teal-pale);
+  border-color: var(--teal); color: var(--teal-dark);
+}
+
+.patients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+.patient-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px;
+  transition: all .22s; text-decoration: none; display: block;
+  position: relative; overflow: hidden;
+}
+
+.patient-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: var(--teal); opacity: 0;
+  transition: opacity .2s;
+}
+
+.patient-card:hover {
+  box-shadow: 0 6px 28px rgba(13,148,136,.13);
+  transform: translateY(-3px);
+  border-color: #99f6e4;
+}
+
+.patient-card:hover::before { opacity: 1; }
+
+.pc-top {
+  display: flex; align-items: center;
+  gap: 12px; margin-bottom: 16px;
+}
+
+.pc-avatar {
+  width: 46px; height: 46px; border-radius: 13px;
+  background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; border: 2px solid #99f6e4; flex-shrink: 0;
+}
+
+.pc-name  { font-size: 15px; font-weight: 700; color: var(--text); }
+.pc-email { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.pc-score-ring {
+  margin-left: auto; text-align: center; flex-shrink: 0;
+}
+
+.pc-score-num {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 700; line-height: 1;
+}
+
+.pc-score-lbl { font-size: 10px; color: var(--muted); }
+
+.pc-vitals {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 14px;
+}
+
+.pc-vital {
+  background: var(--bg); border-radius: 9px;
+  padding: 9px 11px; border: 1px solid var(--border);
+}
+
+.pc-vital-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.pc-vital-val { font-size: 13px; font-weight: 700; color: var(--text); margin-top: 2px; }
+
+.pc-bar-row {
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 12px; border-top: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.pc-bar-bg {
+  flex: 1; height: 6px; background: #e2e8f0;
+  border-radius: 99px; overflow: hidden;
+}
+
+.pc-bar-fill { height: 6px; border-radius: 99px; transition: width .6s ease; }
+
+.pc-actions { display: flex; gap: 8px; }
+
+.btn-view {
+  flex: 1; padding: 9px; border-radius: 10px;
+  text-align: center;
+  background: var(--teal-pale); border: 1.5px solid #99f6e4;
+  color: var(--teal-dark); font-size: 12px; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: all .15s;
+}
+.btn-view:hover { background: #ccfbf1; }
+
+.btn-prescribe {
+  flex: 1; padding: 9px; border-radius: 10px;
+  text-align: center;
+  background: var(--teal); border: none;
+  color: #fff; font-size: 12px; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: all .15s;
+}
+.btn-prescribe:hover { background: var(--teal-dark); }
+
+/* ── Right sidebar ── */
+.right-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+.quick-action-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--surface); font-size: 13px;
+  font-weight: 600; color: var(--text);
+  cursor: pointer; text-decoration: none;
+  transition: all .18s; margin-bottom: 8px;
+}
+.quick-action-btn:last-child { margin-bottom: 0; }
+.quick-action-btn:hover {
+  background: var(--teal-pale); border-color: var(--teal);
+  color: var(--teal-dark); transform: translateX(4px);
+}
+
+.qa-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0; background: var(--teal-pale);
+}
+
+.no-data {
+  text-align: center; padding: 32px 20px;
+  color: var(--muted); font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .doc-main-grid { grid-template-columns: 1fr; }
+  .right-sidebar { display: none; }
+}
+</style>
+
+<!-- ── Welcome Banner ── -->
+<div class="welcome-banner">
+  <div style="z-index:1;">
+    <div class="wb-title">Good {{ 'Morning' if True else 'Evening' }}, Dr. {{ user.name | title }} 👋</div>
+    <div class="wb-sub">Here's your practice overview for today</div>
+    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+      <div style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); border-radius:20px; padding:5px 14px; font-size:12px; color:#fff; font-weight:600;">
+        👨‍⚕️ Doctor Account
+      </div>
+      <div style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); border-radius:20px; padding:5px 14px; font-size:12px; color:#fff; font-weight:600;">
+        📅 <span id="today-date"></span>
+      </div>
+    </div>
+  </div>
+  <div class="wb-stats">
+    <div class="wb-stat">
+      <div class="wb-stat-num">{{ total_patients }}</div>
+      <div class="wb-stat-lbl">Patients</div>
+    </div>
+    <div class="wb-stat">
+      <div class="wb-stat-num">{{ pending | length }}</div>
+      <div class="wb-stat-lbl">Pending</div>
+    </div>
+    <div class="wb-stat">
+      <div class="wb-stat-num">{{ confirmed | length }}</div>
+      <div class="wb-stat-lbl">Confirmed</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Stat Cards ── -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#f0fdfa;">👥</div>
+    <div>
+      <div class="stat-val">{{ total_patients }}</div>
+      <div class="stat-lbl">Total Patients</div>
+    </div>
+    <span class="stat-change" style="background:#f0fdf4; color:#16a34a;">Active</span>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#fefce8;">📅</div>
+    <div>
+      <div class="stat-val">{{ appointments | length }}</div>
+      <div class="stat-lbl">Total Appointments</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#fff7ed;">⏳</div>
+    <div>
+      <div class="stat-val">{{ pending | length }}</div>
+      <div class="stat-lbl">Pending Requests</div>
+    </div>
+    {% if pending | length > 0 %}
+    <span class="stat-change" style="background:#fef2f2; color:#dc2626;">Action Needed</span>
+    {% endif %}
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:#f0fdf4;">✅</div>
+    <div>
+      <div class="stat-val">{{ confirmed | length }}</div>
+      <div class="stat-lbl">Confirmed</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main Content ── -->
+<div class="doc-main-grid">
+
+  <!-- Left: Appointments + Patients -->
+  <div>
+
+    <!-- Pending Appointments -->
+    {% if pending %}
+    <div class="sec-card" style="margin-bottom:20px;" id="appointments">
+      <div class="sec-hdr">
+        <div class="sec-hdr-left">
+          <div class="sec-icon" style="background:#fff7ed;">⏳</div>
+          <div>
+            <div class="sec-title">Pending Appointments</div>
+            <div class="sec-sub">{{ pending | length }} request(s) awaiting your response</div>
+          </div>
+        </div>
+        <span style="background:#fef2f2; color:#dc2626; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px;">
+          {{ pending | length }} New
+        </span>
+      </div>
+
+      {% for appt in pending %}
+      <div class="appt-item">
+        <div class="appt-avatar">🧑</div>
+        <div>
+          {% set p = namespace(name='Patient #' ~ appt.patient_id) %}
+          {% for pd in patient_data %}
+            {% if pd.user.id == appt.patient_id %}{% set p.name = pd.user.name | title %}{% endif %}
+          {% endfor %}
+          <div class="appt-name">{{ p.name }}</div>
+          <div class="appt-meta">
+            <span>📅 {{ appt.date }}</span>
+            <span>🕐 {{ appt.time }}</span>
+          </div>
+        </div>
+        <div class="appt-actions">
+          <a href="/doctor/appointment/{{ appt.id }}/confirm" class="btn-confirm">✅ Confirm</a>
+          <a href="/doctor/appointment/{{ appt.id }}/cancel"  class="btn-cancel">❌ Decline</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Confirmed Appointments -->
+    {% if confirmed %}
+    <div class="sec-card" style="margin-bottom:20px;">
+      <div class="sec-hdr">
+        <div class="sec-hdr-left">
+          <div class="sec-icon" style="background:#f0fdf4;">✅</div>
+          <div>
+            <div class="sec-title">Confirmed Appointments</div>
+            <div class="sec-sub">{{ confirmed | length }} upcoming</div>
+          </div>
+        </div>
+      </div>
+
+      {% for appt in confirmed %}
+      <div class="appt-item">
+        <div class="appt-avatar">🧑</div>
+        <div>
+          {% set p = namespace(name='Patient #' ~ appt.patient_id) %}
+          {% for pd in patient_data %}
+            {% if pd.user.id == appt.patient_id %}{% set p.name = pd.user.name | title %}{% endif %}
+          {% endfor %}
+          <div class="appt-name">{{ p.name }}</div>
+          <div class="appt-meta">
+            <span>📅 {{ appt.date }}</span>
+            <span>🕐 {{ appt.time }}</span>
+          </div>
+        </div>
+        <span class="appt-status" style="background:#f0fdf4; color:#16a34a;">✅ Confirmed</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- All Patients -->
+    <div class="patients-section" id="patients">
+      <div class="patients-toolbar">
+        <div>
+          <h3 style="font-family:'Fraunces',serif; font-size:18px;">👥 All Patients</h3>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ total_patients }} registered patients</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterBy('all',this)">All</button>
+            <button class="filter-tab" onclick="filterBy('good',this)">🟢 Good</button>
+            <button class="filter-tab" onclick="filterBy('fair',this)">🟡 Fair</button>
+            <button class="filter-tab" onclick="filterBy('poor',this)">🔴 Poor</button>
+          </div>
+          <input type="text" class="search-input" id="search-patients"
+            placeholder="Search patient…" oninput="searchPatients(this.value)">
+        </div>
+      </div>
+
+      {% if patient_data %}
+      <div class="patients-grid" id="patients-grid">
+        {% for pd in patient_data %}
+        <div class="patient-card"
+          data-name="{{ pd.user.name | lower }}"
+          data-email="{{ pd.user.email | lower }}"
+          data-score="{{ pd.score or 0 }}">
+
+          <div class="pc-top">
+            <div class="pc-avatar">🧑</div>
+            <div>
+              <div class="pc-name">{{ pd.user.name | title }}</div>
+              <div class="pc-email">{{ pd.user.email }}</div>
+            </div>
+            {% if pd.score %}
+            <div class="pc-score-ring">
+              <div class="pc-score-num" style="color:
+                {% if pd.score >= 75 %}#16a34a
+                {% elif pd.score >= 50 %}#ca8a04
+                {% else %}#dc2626{% endif %};">
+                {{ pd.score }}
+              </div>
+              <div class="pc-score-lbl">/ 100</div>
+            </div>
+            {% else %}
+            <div class="pc-score-ring">
+              <div style="font-size:13px; color:var(--muted);">—</div>
+              <div class="pc-score-lbl">No data</div>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if pd.details %}
+          <div class="pc-vitals">
+            <div class="pc-vital">
+              <div class="pc-vital-lbl">Blood Pressure</div>
+              <div class="pc-vital-val" style="color:
+                {% if pd.details.bp and pd.details.bp.split('/')[0]|int < 120 %}#16a34a
+                {% elif pd.details.bp and pd.details.bp.split('/')[0]|int < 140 %}#ca8a04
+                {% else %}#dc2626{% endif %};">
+                {{ pd.details.bp or '—' }}
+              </div>
+            </div>
+            <div class="pc-vital">
+              <div class="pc-vital-lbl">Blood Sugar</div>
+              <div class="pc-vital-val" style="color:
+                {% if pd.details.sugar and pd.details.sugar < 100 %}#16a34a
+                {% elif pd.details.sugar and pd.details.sugar < 126 %}#ca8a04
+                {% else %}#dc2626{% endif %};">
+                {{ pd.details.sugar or '—' }}{% if pd.details.sugar %} mg/dL{% endif %}
+              </div>
+            </div>
+            <div class="pc-vital">
+              <div class="pc-vital-lbl">Age</div>
+              <div class="pc-vital-val">{{ pd.details.age or '—' }}{% if pd.details.age %} yrs{% endif %}</div>
+            </div>
+            <div class="pc-vital">
+              <div class="pc-vital-lbl">Activity</div>
+              <div class="pc-vital-val" style="color:
+                {% if pd.details.activity == 'high' %}#16a34a
+                {% elif pd.details.activity == 'moderate' %}#2563eb
+                {% else %}#ca8a04{% endif %};">
+                {{ pd.details.activity | capitalize }}
+              </div>
+            </div>
+          </div>
+
+          {% if pd.score %}
+          <div class="pc-bar-row">
+            <span style="font-size:11px; color:var(--muted);">Health</span>
+            <div class="pc-bar-bg">
+              <div class="pc-bar-fill" style="
+                width:{{ pd.score }}%;
+                background:{% if pd.score >= 75 %}#22c55e{% elif pd.score >= 50 %}#f59e0b{% else %}#ef4444{% endif %};">
+              </div>
+            </div>
+            <span style="font-size:11px; font-weight:700; color:
+              {% if pd.score >= 75 %}#16a34a{% elif pd.score >= 50 %}#ca8a04{% else %}#dc2626{% endif %};">
+              {% if pd.score >= 75 %}Good{% elif pd.score >= 50 %}Fair{% else %}Poor{% endif %}
+            </span>
+          </div>
+          {% endif %}
+          {% else %}
+          <div style="padding:14px 0; text-align:center; font-size:12px; color:var(--muted);">
+            No health data recorded yet
+          </div>
+          {% endif %}
+
+          <div class="pc-actions">
+            <a href="/doctor/patient/{{ pd.user.id }}" class="btn-view">👁️ View</a>
+            <a href="/doctor/prescription/{{ pd.user.id }}" class="btn-prescribe">💊 Prescribe</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-data">
+        <div style="font-size:48px; margin-bottom:12px;">👥</div>
+        No patients registered yet.<br>
+        <span style="font-size:13px;">Patients will appear here once they register.</span>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Right Sidebar -->
+  <div class="right-sidebar">
+
+    <!-- Quick Actions -->
+    <div class="sec-card">
+      <div class="sec-hdr">
+        <div class="sec-hdr-left">
+          <div class="sec-icon" style="background:#f0fdfa;">⚡</div>
+          <div><div class="sec-title">Quick Actions</div></div>
+        </div>
+      </div>
+      <div style="padding:12px;">
+        <a href="/chatbot" class="quick-action-btn">
+          <div class="qa-icon">💬</div>
+          <div>
+            <div style="font-size:13px; font-weight:600;">Health Chatbot</div>
+            <div style="font-size:11px; color:var(--muted);">AI powered assistant</div>
+          </div>
+        </a>
+        <a href="/emergency" class="quick-action-btn">
+          <div class="qa-icon" style="background:#fef2f2;">🚨</div>
+          <div>
+            <div style="font-size:13px; font-weight:600; color:#dc2626;">Emergency</div>
+            <div style="font-size:11px; color:var(--muted);">Emergency monitor</div>
+          </div>
+        </a>
+        <a href="/prediction" class="quick-action-btn">
+          <div class="qa-icon">🤖</div>
+          <div>
+            <div style="font-size:13px; font-weight:600;">AI Prediction</div>
+            <div style="font-size:11px; color:var(--muted);">Run risk analysis</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Patients Health Overview -->
+    <div class="sec-card">
+      <div class="sec-hdr">
+        <div class="sec-hdr-left">
+          <div class="sec-icon" style="background:#fefce8;">📊</div>
+          <div><div class="sec-title">Health Overview</div></div>
+        </div>
+      </div>
+      <div style="padding:16px;">
+        {% set good_count = patient_data | selectattr('score', 'ge', 75) | list | length %}
+        {% set fair_count = patient_data | selectattr('score', 'ge', 50) | list | length - good_count %}
+        {% set poor_count = patient_data | length - good_count - fair_count %}
+
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:13px; color:var(--muted); width:40px;">🟢</span>
+            <div style="flex:1; height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden;">
+              <div style="height:8px; background:#22c55e; border-radius:99px;
+                width:{% if total_patients > 0 %}{{ (good_count / total_patients * 100) | round }}{% else %}0{% endif %}%;"></div>
+            </div>
+            <span style="font-size:12px; font-weight:700; color:#16a34a; min-width:20px;">{{ good_count }}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:13px; color:var(--muted); width:40px;">🟡</span>
+            <div style="flex:1; height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden;">
+              <div style="height:8px; background:#f59e0b; border-radius:99px;
+                width:{% if total_patients > 0 %}{{ (fair_count / total_patients * 100) | round }}{% else %}0{% endif %}%;"></div>
+            </div>
+            <span style="font-size:12px; font-weight:700; color:#ca8a04; min-width:20px;">{{ fair_count }}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:13px; color:var(--muted); width:40px;">🔴</span>
+            <div style="flex:1; height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden;">
+              <div style="height:8px; background:#ef4444; border-radius:99px;
+                width:{% if total_patients > 0 %}{{ (poor_count / total_patients * 100) | round }}{% else %}0{% endif %}%;"></div>
+            </div>
+            <span style="font-size:12px; font-weight:700; color:#dc2626; min-width:20px;">{{ poor_count }}</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:14px;">
+          <div style="background:#f0fdf4; border-radius:10px; padding:10px; text-align:center;">
+            <div style="font-family:'Fraunces',serif; font-size:18px; font-weight:700; color:#16a34a;">{{ good_count }}</div>
+            <div style="font-size:10px; color:#16a34a;">Good</div>
+          </div>
+          <div style="background:#fefce8; border-radius:10px; padding:10px; text-align:center;">
+            <div style="font-family:'Fraunces',serif; font-size:18px; font-weight:700; color:#ca8a04;">{{ fair_count }}</div>
+            <div style="font-size:10px; color:#ca8a04;">Fair</div>
+          </div>
+          <div style="background:#fef2f2; border-radius:10px; padding:10px; text-align:center;">
+            <div style="font-family:'Fraunces',serif; font-size:18px; font-weight:700; color:#dc2626;">{{ poor_count }}</div>
+            <div style="font-size:10px; color:#dc2626;">Poor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.getElementById('today-date').textContent =
+  new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+
+function searchPatients(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.patient-card').forEach(card => {
+    const name  = card.dataset.name;
+    const email = card.dataset.email;
+    card.style.display = (name.includes(q) || email.includes(q)) ? 'block' : 'none';
+  });
+}
+
+function filterBy(type, btn) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.patient-card').forEach(card => {
+    const score = parseInt(card.dataset.score);
+    if (type === 'all') card.style.display = 'block';
+    else if (type === 'good') card.style.display = score >= 75 ? 'block' : 'none';
+    else if (type === 'fair') card.style.display = (score >= 50 && score < 75) ? 'block' : 'none';
+    else if (type === 'poor') card.style.display = score < 50 ? 'block' : 'none';
+  });
+}
+</script>
+
+{% endblock %}

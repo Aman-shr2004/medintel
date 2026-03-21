@@ -1,0 +1,842 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ── Header ── */
+.emg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ── Status banner ── */
+.status-banner {
+  border-radius: 18px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.status-banner.stable {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 2px solid #86efac;
+}
+
+.status-banner.warning {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 2px solid #fcd34d;
+}
+
+.status-banner.critical {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 2px solid #fca5a5;
+  animation: criticalPulse 2s ease-in-out infinite;
+}
+
+@keyframes criticalPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.2); }
+  50%      { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+}
+
+.status-icon-big { font-size: 52px; flex-shrink: 0; }
+
+.status-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.status-desc { font-size: 14px; margin-top: 4px; opacity: .8; line-height: 1.5; }
+
+.score-badge {
+  margin-left: auto;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.score-big {
+  font-family: 'Fraunces', serif;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.score-lbl { font-size: 12px; opacity: .7; margin-top: 4px; }
+
+/* ── Top grid ── */
+.emg-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+/* ── SOS Card ── */
+.sos-card {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border-radius: 18px;
+  padding: 28px 20px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(220,38,38,.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.sos-btn {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid rgba(255,255,255,.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .2s;
+  box-shadow: 0 0 0 8px rgba(255,255,255,.15);
+  animation: sosPulse 2s ease-in-out infinite;
+  text-decoration: none;
+}
+
+@keyframes sosPulse {
+  0%,100% { box-shadow: 0 0 0 8px rgba(255,255,255,.15); }
+  50%      { box-shadow: 0 0 0 16px rgba(255,255,255,0); }
+}
+
+.sos-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 12px rgba(255,255,255,.2);
+}
+
+.sos-btn-icon { font-size: 32px; line-height: 1; }
+.sos-btn-text { font-size: 13px; font-weight: 800; color: #dc2626; letter-spacing: 1px; }
+
+.sos-title { font-size: 15px; font-weight: 700; color: #fff; }
+.sos-num   { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 1px; }
+.sos-desc  { font-size: 11px; color: rgba(255,255,255,.75); }
+
+/* ── Vitals status card ── */
+.vitals-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.vitals-card h3 { font-size: 14px; margin-bottom: 14px; }
+
+.vital-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.vital-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.vr-left { display: flex; align-items: center; gap: 8px; }
+
+.vr-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+
+.vr-label { font-size: 12px; color: var(--muted); }
+.vr-val   { font-size: 13px; font-weight: 700; color: var(--text); }
+
+.vr-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 6px;
+}
+
+/* ── Emergency contacts card ── */
+.contacts-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.contacts-card h3 { font-size: 14px; margin-bottom: 14px; }
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+}
+
+.contact-item:last-child { border-bottom: none; }
+
+.contact-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+
+.contact-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.contact-num  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.call-btn {
+  margin-left: auto;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  color: #16a34a;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .15s;
+  white-space: nowrap;
+  width: auto;
+}
+
+.call-btn:hover { background: #dcfce7; transform: scale(1.03); }
+.call-btn.red { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+.call-btn.red:hover { background: #fee2e2; }
+
+/* ── Middle grid ── */
+.emg-mid-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+/* ── First aid card ── */
+.firstaid-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.firstaid-header {
+  padding: 16px 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+
+.firstaid-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.firstaid-tabs::-webkit-scrollbar { display: none; }
+
+.fa-tab {
+  padding: 5px 13px;
+  border-radius: 18px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 12px; font-weight: 600;
+  color: var(--muted); cursor: pointer;
+  white-space: nowrap; width: auto;
+  transition: all .15s;
+}
+
+.fa-tab.active, .fa-tab:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.firstaid-body { padding: 16px 20px; }
+
+.fa-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.fa-step:last-child { margin-bottom: 0; }
+
+.fa-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: #fef2f2;
+  border: 1.5px solid #fca5a5;
+  color: #dc2626;
+  font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+.fa-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+.fa-text strong { color: #dc2626; }
+
+/* ── Warning signs card ── */
+.warning-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.warning-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.warning-item:last-child { margin-bottom: 0; }
+.warning-item.high { background: #fef2f2; border-color: #fecaca; }
+.warning-item.medium { background: #fffbeb; border-color: #fde68a; }
+
+.wi-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.wi-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.wi-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+/* ── Do/Don't card ── */
+.dos-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 22px;
+}
+
+.dos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.dos-col { border-radius: 12px; padding: 14px; }
+.dos-col.do   { background: #f0fdf4; border: 1.5px solid #86efac; }
+.dos-col.dont { background: #fef2f2; border: 1.5px solid #fca5a5; }
+
+.dos-col-title {
+  font-size: 13px; font-weight: 700;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.dos-col.do   .dos-col-title { color: #16a34a; }
+.dos-col.dont .dos-col-title { color: #dc2626; }
+
+.dos-item {
+  font-size: 12px;
+  color: var(--text);
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+  display: flex; gap: 6px; align-items: flex-start;
+  line-height: 1.4;
+}
+
+.dos-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+@media (max-width: 900px) {
+  .emg-top-grid { grid-template-columns: 1fr; }
+  .emg-mid-grid { grid-template-columns: 1fr; }
+  .dos-grid     { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ── Header ── -->
+<div class="emg-header">
+  <div>
+    <h2>🚨 Emergency Monitor</h2>
+    <div style="font-size:13px; color:var(--muted); margin-top:4px;">
+      Real-time health status · First aid guide · Emergency contacts
+    </div>
+  </div>
+  <a href="/dashboard" class="btn btn-ghost">← Dashboard</a>
+</div>
+
+<!-- ── Status Banner ── -->
+{% if alert %}
+<div class="status-banner critical">
+  <div class="status-icon-big">🚨</div>
+  <div>
+    <div class="status-title" style="color:#dc2626;">Critical — Act Immediately!</div>
+    <div class="status-desc" style="color:#991b1b;">
+      Your health score is dangerously low. Please call emergency services or visit a hospital right now.
+      Do not wait — every minute matters.
+    </div>
+  </div>
+  <div class="score-badge">
+    <div class="score-big" style="color:#dc2626;">{{ score }}</div>
+    <div class="score-lbl" style="color:#dc2626;">/ 100</div>
+  </div>
+</div>
+{% elif score and score < 75 %}
+<div class="status-banner warning">
+  <div class="status-icon-big">⚠️</div>
+  <div>
+    <div class="status-title" style="color:#92400e;">Caution — Monitor Closely</div>
+    <div class="status-desc" style="color:#92400e;">
+      Your health score needs attention. Consider consulting a doctor soon and monitoring your vitals regularly.
+    </div>
+  </div>
+  <div class="score-badge">
+    <div class="score-big" style="color:#ca8a04;">{{ score }}</div>
+    <div class="score-lbl" style="color:#ca8a04;">/ 100</div>
+  </div>
+</div>
+{% else %}
+<div class="status-banner stable">
+  <div class="status-icon-big">✅</div>
+  <div>
+    <div class="status-title" style="color:#166534;">You are Stable</div>
+    <div class="status-desc" style="color:#166534;">
+      Your health score looks good. Keep maintaining your healthy habits and schedule regular checkups.
+    </div>
+  </div>
+  <div class="score-badge">
+    <div class="score-big" style="color:#16a34a;">{{ score }}</div>
+    <div class="score-lbl" style="color:#16a34a;">/ 100</div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── TOP ROW: SOS + Vitals + Contacts ── -->
+<div class="emg-top-grid">
+
+  <!-- SOS Card -->
+  <div class="sos-card">
+    <div class="sos-title">🚨 Emergency SOS</div>
+    <a href="tel:108" class="sos-btn">
+      <div class="sos-btn-icon">🆘</div>
+      <div class="sos-btn-text">SOS</div>
+    </a>
+    <div>
+      <div class="sos-num">108</div>
+      <div class="sos-desc">India Ambulance — Tap to Call</div>
+    </div>
+    <div style="width:100%; border-top:1px solid rgba(255,255,255,.2); padding-top:12px;">
+      <a href="tel:100" style="display:flex; align-items:center; justify-content:space-between; text-decoration:none; padding:6px 0;">
+        <span style="font-size:13px; color:rgba(255,255,255,.85);">🚔 Police</span>
+        <span style="font-size:15px; font-weight:800; color:#fff;">100</span>
+      </a>
+      <a href="tel:101" style="display:flex; align-items:center; justify-content:space-between; text-decoration:none; padding:6px 0;">
+        <span style="font-size:13px; color:rgba(255,255,255,.85);">🚒 Fire</span>
+        <span style="font-size:15px; font-weight:800; color:#fff;">101</span>
+      </a>
+      <a href="tel:102" style="display:flex; align-items:center; justify-content:space-between; text-decoration:none; padding:6px 0;">
+        <span style="font-size:13px; color:rgba(255,255,255,.85);">🏥 Hospital</span>
+        <span style="font-size:15px; font-weight:800; color:#fff;">102</span>
+      </a>
+    </div>
+
+    <!-- Find Nearby Hospital Button -->
+    <button onclick="findNearbyHospital()" id="hospital-btn" style="
+      width:100%; margin-top:4px; padding:11px 14px; border-radius:11px;
+      background:rgba(255,255,255,.18); border:1.5px solid rgba(255,255,255,.35);
+      color:#fff; font-size:13px; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      font-family:'DM Sans',sans-serif; transition:all .18s;
+    "
+    onmouseover="this.style.background='rgba(255,255,255,.28)'"
+    onmouseout="this.style.background='rgba(255,255,255,.18)'">
+      <span style="font-size:16px;">🗺️</span> Find Nearby Hospital
+    </button>
+
+    <!-- Status message -->
+    <div id="location-status" style="
+      display:none; margin-top:8px;
+      font-size:12px; color:rgba(255,255,255,.85);
+      text-align:center; line-height:1.5;
+    "></div>
+
+  </div>
+
+  <!-- Vitals Status -->
+  <div class="vitals-card">
+    <h3>💓 Your Current Vitals</h3>
+
+    {% if details %}
+
+    {% if details.bp %}
+    {% set sys = details.bp.split('/')[0] | int %}
+    <div class="vital-row">
+      <div class="vr-left">
+        <div class="vr-icon" style="background:#fff1f2;">💉</div>
+        <div>
+          <div class="vr-label">Blood Pressure</div>
+          <div class="vr-val">{{ details.bp }} mmHg</div>
+        </div>
+      </div>
+      <span class="vr-badge" style="{% if sys < 120 %}background:#f0fdf4;color:#16a34a;{% elif sys < 140 %}background:#fefce8;color:#ca8a04;{% else %}background:#fef2f2;color:#dc2626;{% endif %}">
+        {% if sys < 120 %}Normal{% elif sys < 140 %}High{% else %}Critical{% endif %}
+      </span>
+    </div>
+    {% endif %}
+
+    {% if details.sugar %}
+    <div class="vital-row">
+      <div class="vr-left">
+        <div class="vr-icon" style="background:#fefce8;">🩸</div>
+        <div>
+          <div class="vr-label">Blood Sugar</div>
+          <div class="vr-val">{{ details.sugar }} mg/dL</div>
+        </div>
+      </div>
+      <span class="vr-badge" style="{% if details.sugar < 100 %}background:#f0fdf4;color:#16a34a;{% elif details.sugar < 126 %}background:#fefce8;color:#ca8a04;{% else %}background:#fef2f2;color:#dc2626;{% endif %}">
+        {% if details.sugar < 100 %}Normal{% elif details.sugar < 126 %}Pre{% else %}High{% endif %}
+      </span>
+    </div>
+    {% endif %}
+
+    {% if details.height and details.weight %}
+    {% set h = details.height / 100 %}
+    {% set bv = (details.weight / (h * h)) | round(1) %}
+    <div class="vital-row">
+      <div class="vr-left">
+        <div class="vr-icon" style="background:#f0fdf4;">⚖️</div>
+        <div>
+          <div class="vr-label">BMI</div>
+          <div class="vr-val">{{ bv }} kg/m²</div>
+        </div>
+      </div>
+      <span class="vr-badge" style="{% if 18.5 <= bv <= 24.9 %}background:#f0fdf4;color:#16a34a;{% elif bv <= 29.9 %}background:#fefce8;color:#ca8a04;{% else %}background:#fef2f2;color:#dc2626;{% endif %}">
+        {% if 18.5 <= bv <= 24.9 %}Normal{% elif bv <= 29.9 %}Over{% else %}Obese{% endif %}
+      </span>
+    </div>
+    {% endif %}
+
+    <div class="vital-row">
+      <div class="vr-left">
+        <div class="vr-icon" style="background:#f5f3ff;">🚬</div>
+        <div>
+          <div class="vr-label">Smoking</div>
+          <div class="vr-val">{{ details.smoking | capitalize }}</div>
+        </div>
+      </div>
+      <span class="vr-badge" style="{% if details.smoking == 'yes' %}background:#fef2f2;color:#dc2626;{% else %}background:#f0fdf4;color:#16a34a;{% endif %}">
+        {% if details.smoking == 'yes' %}Risk{% else %}Safe{% endif %}
+      </span>
+    </div>
+
+    <a href="/health-data" class="btn btn-ghost" style="width:100%; justify-content:center; margin-top:12px; font-size:12px; padding:8px;">
+      ✏️ Update Vitals
+    </a>
+
+    {% else %}
+    <div style="text-align:center; padding:20px 0; color:var(--muted); font-size:13px;">
+      No health data found.<br>
+      <a href="/health-data" style="color:var(--teal); font-weight:600;">Add it here →</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Emergency Contacts -->
+  <div class="contacts-card">
+    <h3>📞 Emergency Helplines</h3>
+
+    <div class="contact-item">
+      <div class="contact-icon" style="background:#fef2f2;">🚑</div>
+      <div>
+        <div class="contact-name">Ambulance</div>
+        <div class="contact-num">National Emergency</div>
+      </div>
+      <a href="tel:108" class="call-btn red">📞 108</a>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-icon" style="background:#eff6ff;">🏥</div>
+      <div>
+        <div class="contact-name">Medical Helpline</div>
+        <div class="contact-num">Health Ministry</div>
+      </div>
+      <a href="tel:104" class="call-btn">📞 104</a>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-icon" style="background:#fefce8;">💊</div>
+      <div>
+        <div class="contact-name">Poison Control</div>
+        <div class="contact-num">AIIMS Delhi</div>
+      </div>
+      <a href="tel:1800116117" class="call-btn">📞 1800-116-117</a>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-icon" style="background:#f5f3ff;">🧠</div>
+      <div>
+        <div class="contact-name">Mental Health</div>
+        <div class="contact-num">iCall Helpline</div>
+      </div>
+      <a href="tel:9152987821" class="call-btn">📞 9152987821</a>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-icon" style="background:#fef2f2;">🚔</div>
+      <div>
+        <div class="contact-name">Police</div>
+        <div class="contact-num">National Emergency</div>
+      </div>
+      <a href="tel:100" class="call-btn red">📞 100</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── MIDDLE ROW: First Aid + Warning Signs ── -->
+<div class="emg-mid-grid">
+
+  <!-- First Aid Guide -->
+  <div class="firstaid-card">
+    <div class="firstaid-header">
+      <span style="font-size:20px;">🩹</span>
+      <div>
+        <div style="font-size:14px; font-weight:700; color:var(--text);">First Aid Guide</div>
+        <div style="font-size:12px; color:var(--muted);">Step-by-step emergency instructions</div>
+      </div>
+    </div>
+
+    <div class="firstaid-tabs">
+      <button class="fa-tab active" onclick="showGuide('heart', this)">❤️ Heart Attack</button>
+      <button class="fa-tab" onclick="showGuide('stroke', this)">🧠 Stroke</button>
+      <button class="fa-tab" onclick="showGuide('diabetes', this)">🩸 Diabetic</button>
+      <button class="fa-tab" onclick="showGuide('choking', this)">😮 Choking</button>
+      <button class="fa-tab" onclick="showGuide('faint', this)">💫 Fainting</button>
+    </div>
+
+    <div class="firstaid-body" id="guide-body">
+      <!-- Heart Attack (default) -->
+      <div id="guide-heart">
+        <div class="fa-step">
+          <div class="fa-num">1</div>
+          <div class="fa-text"><strong>Call 108</strong> immediately — do not wait. Tell them it's a possible heart attack.</div>
+        </div>
+        <div class="fa-step">
+          <div class="fa-num">2</div>
+          <div class="fa-text"><strong>Make the person sit</strong> or lie in a comfortable position. Loosen tight clothing.</div>
+        </div>
+        <div class="fa-step">
+          <div class="fa-num">3</div>
+          <div class="fa-text">Give <strong>aspirin (325mg)</strong> if available and person is not allergic. Ask them to chew it.</div>
+        </div>
+        <div class="fa-step">
+          <div class="fa-num">4</div>
+          <div class="fa-text">If unconscious and not breathing, <strong>start CPR</strong> — 30 chest compressions, 2 rescue breaths.</div>
+        </div>
+        <div class="fa-step">
+          <div class="fa-num">5</div>
+          <div class="fa-text"><strong>Stay calm</strong> and keep the person calm. Do not leave them alone until help arrives.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Warning Signs -->
+  <div class="warning-card">
+    <h3 style="margin-bottom:14px;">⚠️ Warning Signs — Call 108 Now</h3>
+
+    <div class="warning-item high">
+      <div class="wi-icon">💔</div>
+      <div>
+        <div class="wi-title">Chest Pain / Pressure</div>
+        <div class="wi-desc">Squeezing or pressure in chest, possibly spreading to arm or jaw</div>
+      </div>
+    </div>
+
+    <div class="warning-item high">
+      <div class="wi-icon">🧠</div>
+      <div>
+        <div class="wi-title">Sudden Weakness / Numbness</div>
+        <div class="wi-desc">Face drooping, arm weakness, slurred speech — signs of stroke</div>
+      </div>
+    </div>
+
+    <div class="warning-item high">
+      <div class="wi-icon">😮‍💨</div>
+      <div>
+        <div class="wi-title">Severe Breathing Difficulty</div>
+        <div class="wi-desc">Cannot breathe, lips turning blue — immediate emergency</div>
+      </div>
+    </div>
+
+    <div class="warning-item medium">
+      <div class="wi-icon">💫</div>
+      <div>
+        <div class="wi-title">Sudden Dizziness / Fainting</div>
+        <div class="wi-desc">Loss of consciousness or severe dizziness with chest pain</div>
+      </div>
+    </div>
+
+    <div class="warning-item medium">
+      <div class="wi-icon">🩸</div>
+      <div>
+        <div class="wi-title">Very High / Low Blood Sugar</div>
+        <div class="wi-desc">Shaking, sweating, confusion — diabetic emergency</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ── DO's & DON'Ts ── -->
+<div class="dos-card">
+  <h3>✅ Emergency Do's & Don'ts</h3>
+  <div class="dos-grid">
+    <div class="dos-col do">
+      <div class="dos-col-title">✅ DO These</div>
+      <div class="dos-item"><span>✓</span> Call 108 first thing</div>
+      <div class="dos-item"><span>✓</span> Keep the person calm and still</div>
+      <div class="dos-item"><span>✓</span> Loosen tight clothing</div>
+      <div class="dos-item"><span>✓</span> Note time symptoms started</div>
+      <div class="dos-item"><span>✓</span> Stay with the person always</div>
+      <div class="dos-item"><span>✓</span> Do CPR if trained and needed</div>
+    </div>
+    <div class="dos-col dont">
+      <div class="dos-col-title">❌ DON'T Do These</div>
+      <div class="dos-item"><span>✗</span> Don't leave them alone</div>
+      <div class="dos-item"><span>✗</span> Don't give food or water</div>
+      <div class="dos-item"><span>✗</span> Don't drive yourself to hospital</div>
+      <div class="dos-item"><span>✗</span> Don't wait to see if it gets better</div>
+      <div class="dos-item"><span>✗</span> Don't give medicine without knowing</div>
+      <div class="dos-item"><span>✗</span> Don't panic — stay focused</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Find Nearby Hospital ─────────────────────────────────
+function findNearbyHospital() {
+  const btn    = document.getElementById('hospital-btn');
+  const status = document.getElementById('location-status');
+
+  // Update button to loading state
+  btn.innerHTML = '<span style="font-size:16px;">📍</span> Getting your location…';
+  btn.style.opacity = '.8';
+  btn.style.cursor  = 'not-allowed';
+  status.style.display = 'block';
+  status.textContent   = '🔄 Accessing GPS…';
+
+  if (!navigator.geolocation) {
+    // Geolocation not supported — open generic search
+    status.textContent = '⚠️ GPS not available. Opening general search…';
+    setTimeout(() => {
+      window.open('https://www.google.com/maps/search/hospital+near+me', '_blank');
+      resetHospitalBtn();
+    }, 1500);
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    // ✅ Success — got coordinates
+    function(pos) {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const acc = Math.round(pos.coords.accuracy);
+
+      status.innerHTML = `✅ Location found! (±${acc}m accuracy)<br>Opening Google Maps…`;
+      btn.innerHTML = '<span style="font-size:16px;">✅</span> Location Found!';
+
+      // Open Google Maps with exact coordinates searching hospitals nearby
+      const mapsUrl = `https://www.google.com/maps/search/hospital/@${lat},${lng},14z`;
+      setTimeout(() => {
+        window.open(mapsUrl, '_blank');
+        resetHospitalBtn();
+      }, 800);
+    },
+
+    // ❌ Error — permission denied or unavailable
+    function(err) {
+      let msg = '';
+      if (err.code === 1) {
+        msg = '❌ Location permission denied.<br>Please allow location access in browser settings.';
+      } else if (err.code === 2) {
+        msg = '⚠️ Location unavailable. Opening general search…';
+        setTimeout(() => {
+          window.open('https://www.google.com/maps/search/hospital+near+me', '_blank');
+        }, 1500);
+      } else {
+        msg = '⚠️ Location timeout. Opening general search…';
+        setTimeout(() => {
+          window.open('https://www.google.com/maps/search/hospital+near+me', '_blank');
+        }, 1500);
+      }
+      status.innerHTML = msg;
+      resetHospitalBtn();
+    },
+
+    // Options — high accuracy, 10 second timeout
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+function resetHospitalBtn() {
+  const btn = document.getElementById('hospital-btn');
+  setTimeout(() => {
+    btn.innerHTML = '<span style="font-size:16px;">🗺️</span> Find Nearby Hospital';
+    btn.style.opacity = '1';
+    btn.style.cursor  = 'pointer';
+  }, 3000);
+}
+
+const guides = {
+  heart: `
+    <div class="fa-step"><div class="fa-num">1</div><div class="fa-text"><strong>Call 108</strong> immediately. Tell them it's a possible heart attack.</div></div>
+    <div class="fa-step"><div class="fa-num">2</div><div class="fa-text"><strong>Sit or lie down</strong> comfortably. Loosen tight clothing around chest.</div></div>
+    <div class="fa-step"><div class="fa-num">3</div><div class="fa-text">Give <strong>aspirin 325mg</strong> if available and not allergic — ask to chew it.</div></div>
+    <div class="fa-step"><div class="fa-num">4</div><div class="fa-text">If unconscious, <strong>start CPR</strong> — 30 compressions, 2 breaths. Repeat.</div></div>
+    <div class="fa-step"><div class="fa-num">5</div><div class="fa-text"><strong>Stay calm</strong> and do not leave the person alone until help arrives.</div></div>`,
+
+  stroke: `
+    <div class="fa-step"><div class="fa-num">1</div><div class="fa-text">Use <strong>FAST test</strong> — Face drooping, Arm weakness, Speech slurred, Time to call 108.</div></div>
+    <div class="fa-step"><div class="fa-num">2</div><div class="fa-text"><strong>Call 108 immediately</strong> — stroke treatment works best within first 3 hours.</div></div>
+    <div class="fa-step"><div class="fa-num">3</div><div class="fa-text"><strong>Lay the person down</strong> with head slightly raised. Do not give food or water.</div></div>
+    <div class="fa-step"><div class="fa-num">4</div><div class="fa-text">If unconscious but breathing, place in <strong>recovery position</strong> on their side.</div></div>
+    <div class="fa-step"><div class="fa-num">5</div><div class="fa-text"><strong>Note the time</strong> symptoms started — tell the doctor when you arrive.</div></div>`,
+
+  diabetes: `
+    <div class="fa-step"><div class="fa-num">1</div><div class="fa-text">If <strong>conscious and shaking</strong> — give sugar immediately (juice, glucose, candy).</div></div>
+    <div class="fa-step"><div class="fa-num">2</div><div class="fa-text">If <strong>unconscious</strong> — do NOT give anything by mouth. Call 108 immediately.</div></div>
+    <div class="fa-step"><div class="fa-num">3</div><div class="fa-text">Check for <strong>medical ID bracelet</strong> — it may have important information.</div></div>
+    <div class="fa-step"><div class="fa-num">4</div><div class="fa-text">If they have a <strong>glucagon kit</strong>, use it as instructed on the label.</div></div>
+    <div class="fa-step"><div class="fa-num">5</div><div class="fa-text">Monitor until they <strong>recover fully</strong>. Take them to doctor even if feeling better.</div></div>`,
+
+  choking: `
+    <div class="fa-step"><div class="fa-num">1</div><div class="fa-text">Ask <strong>"Are you choking?"</strong> — if they can cough or speak, encourage coughing.</div></div>
+    <div class="fa-step"><div class="fa-num">2</div><div class="fa-text">Give <strong>5 firm back blows</strong> between shoulder blades with heel of hand.</div></div>
+    <div class="fa-step"><div class="fa-num">3</div><div class="fa-text">Give <strong>5 abdominal thrusts</strong> (Heimlich maneuver) — push inward and upward.</div></div>
+    <div class="fa-step"><div class="fa-num">4</div><div class="fa-text"><strong>Alternate</strong> between 5 back blows and 5 thrusts until object dislodges.</div></div>
+    <div class="fa-step"><div class="fa-num">5</div><div class="fa-text">If unconscious, <strong>call 108</strong> and begin CPR. Check mouth before each breath.</div></div>`,
+
+  faint: `
+    <div class="fa-step"><div class="fa-num">1</div><div class="fa-text"><strong>Lay the person flat</strong> on their back. Elevate legs 30cm if possible.</div></div>
+    <div class="fa-step"><div class="fa-num">2</div><div class="fa-text"><strong>Loosen clothing</strong> — collar, belt, anything tight around neck or waist.</div></div>
+    <div class="fa-step"><div class="fa-num">3</div><div class="fa-text">Ensure <strong>fresh air</strong> — open windows, fan the face gently.</div></div>
+    <div class="fa-step"><div class="fa-num">4</div><div class="fa-text">If not recovering in <strong>1–2 minutes</strong>, call 108 immediately.</div></div>
+    <div class="fa-step"><div class="fa-num">5</div><div class="fa-text">Once conscious, give <strong>water or juice</strong> slowly. Do not let them stand up fast.</div></div>`
+};
+
+function showGuide(type, btn) {
+  document.querySelectorAll('.fa-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('guide-body').innerHTML = `<div id="guide-${type}">${guides[type]}</div>`;
+}
+</script>
+
+{% endblock %}

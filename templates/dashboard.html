@@ -1,0 +1,877 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ── Page header ── */
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.greeting-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.date-chip {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ── Top stat grid ── */
+.top-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── Health Score Ring Card ── */
+.score-card {
+  background: linear-gradient(145deg, #0f766e, #0d9488);
+  border-radius: 18px;
+  padding: 28px 24px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.score-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.07);
+}
+
+.score-card::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.05);
+}
+
+.score-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,.75);
+  margin-bottom: 18px;
+  z-index: 1;
+}
+
+.ring-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  z-index: 1;
+}
+
+.ring-wrap svg {
+  transform: rotate(-90deg);
+}
+
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-num {
+  font-family: 'Fraunces', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.ring-label {
+  font-size: 11px;
+  color: rgba(255,255,255,.7);
+  margin-top: 3px;
+}
+
+.score-badge-row {
+  margin-top: 16px;
+  z-index: 1;
+}
+
+.score-badge {
+  background: rgba(255,255,255,.2);
+  border: 1px solid rgba(255,255,255,.3);
+  color: #fff;
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.score-tips {
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(255,255,255,.7);
+  text-align: center;
+  line-height: 1.5;
+  z-index: 1;
+}
+
+/* ── Vitals grid (right side of top) ── */
+.vitals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.vital-card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow .2s;
+}
+
+.vital-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+
+.vital-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vital-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.vital-status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.vital-value {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.vital-unit {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.vital-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.vital-bar-wrap {
+  background: #f1f5f9;
+  border-radius: 99px;
+  height: 5px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.vital-bar {
+  height: 5px;
+  border-radius: 99px;
+  transition: width .6s ease;
+}
+
+/* ── Middle row ── */
+.mid-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── Lifestyle card ── */
+.lifestyle-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.lifestyle-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.lf-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.lf-label { font-size: 13px; color: var(--muted); }
+.lf-value { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 1px; }
+
+/* ── Quick actions ── */
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  background: var(--surface);
+  transition: all .18s;
+}
+
+.action-btn:hover {
+  background: var(--teal-pale);
+  border-color: var(--teal);
+  color: var(--teal-dark);
+  transform: translateY(-1px);
+}
+
+.action-btn.danger {
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.action-btn.danger:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.action-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  background: var(--teal-pale);
+  flex-shrink: 0;
+}
+
+.action-btn.danger .action-icon {
+  background: #fef2f2;
+}
+
+/* ── Tips card ── */
+.tip-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+
+.tip-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.tip-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.tip-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ── Bottom row ── */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ── Chart card ── */
+.chart-wrap {
+  position: relative;
+  height: 180px;
+  margin-top: 16px;
+}
+
+/* ── Risk cards ── */
+.risk-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.risk-item {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+}
+
+.risk-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.risk-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.risk-pct {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .top-grid  { grid-template-columns: 1fr; }
+  .mid-grid  { grid-template-columns: 1fr; }
+  .bottom-grid { grid-template-columns: 1fr; }
+  .vitals-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+<!-- ── Page Header ── -->
+<div class="dash-header">
+  <div>
+    <h2>Welcome back, {{ user.name }} 👋</h2>
+    <div class="greeting-sub">
+      {{ user.role | capitalize }} account
+      {% if details %}· Health data on record{% endif %}
+    </div>
+  </div>
+  <div class="date-chip">
+    📅 <span id="today-date"></span>
+  </div>
+</div>
+
+<!-- ── TOP ROW: Score + Vitals ── -->
+<div class="top-grid">
+
+  <!-- Health Score Ring -->
+  <div class="score-card">
+    <div class="score-title">Overall Health Score</div>
+
+    {% if score %}
+    <div class="ring-wrap">
+      {% set pct = score %}
+      {% set dash = (pct / 100 * 351.86) | round(2) %}
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="12"/>
+        <circle cx="70" cy="70" r="56" fill="none" stroke="#fff" stroke-width="12"
+          stroke-dasharray="{{ dash }} 351.86"
+          stroke-linecap="round"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-num">{{ score }}</div>
+        <div class="ring-label">out of 100</div>
+      </div>
+    </div>
+
+    <div class="score-badge-row">
+      {% if score >= 90 %}   <div class="score-badge">Excellent 🟢</div>
+      {% elif score >= 75 %} <div class="score-badge">Good 🟡</div>
+      {% elif score >= 50 %} <div class="score-badge">Fair 🟠</div>
+      {% else %}             <div class="score-badge">Poor 🔴 — Act Now</div>
+      {% endif %}
+    </div>
+
+    <div class="score-tips">
+      {% if score >= 75 %}Keep up your healthy habits!
+      {% elif score >= 50 %}Small improvements can make a big difference.
+      {% else %}Please consult a doctor soon.{% endif %}
+    </div>
+
+    {% else %}
+    <div style="text-align:center; padding:20px 0; z-index:1;">
+      <div style="font-size:40px; margin-bottom:12px;">📋</div>
+      <div style="color:rgba(255,255,255,.8); font-size:14px; margin-bottom:16px;">No health data yet</div>
+      <a href="/health-data" style="
+        background:rgba(255,255,255,.2); color:#fff;
+        border:1px solid rgba(255,255,255,.35);
+        padding:9px 20px; border-radius:10px;
+        text-decoration:none; font-size:13px; font-weight:600;
+      ">Add Health Data →</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Vitals Grid -->
+  <div class="vitals-grid">
+
+    {% if details and details.height and details.weight %}
+    {% set h = details.height / 100 %}
+    {% set bv = (details.weight / (h * h)) | round(1) %}
+    <div class="vital-card">
+      <div class="vital-top">
+        <div class="vital-icon" style="background:#f0fdf4;">⚖️</div>
+        <div class="vital-status-dot" style="background:
+          {% if 18.5 <= bv <= 24.9 %}#22c55e
+          {% elif bv <= 29.9 %}#f59e0b
+          {% else %}#ef4444{% endif %};">
+        </div>
+      </div>
+      <div class="vital-value">{{ bv }}<span class="vital-unit"> kg/m²</span></div>
+      <div class="vital-label">BMI
+        — {% if bv < 18.5 %}Underweight
+          {% elif bv <= 24.9 %}Normal ✅
+          {% elif bv <= 29.9 %}Overweight
+          {% else %}Obese{% endif %}
+      </div>
+      <div class="vital-bar-wrap">
+        <div class="vital-bar" style="
+          width: {{ [([bv - 10, 0] | max) / 30 * 100, 100] | min }}%;
+          background: {% if 18.5 <= bv <= 24.9 %}#22c55e{% elif bv <= 29.9 %}#f59e0b{% else %}#ef4444{% endif %};
+        "></div>
+      </div>
+    </div>
+    {% else %}
+    <div class="vital-card" style="opacity:.5;">
+      <div class="vital-icon" style="background:#f0fdf4;">⚖️</div>
+      <div class="vital-value" style="font-size:18px; color:var(--muted);">—</div>
+      <div class="vital-label">BMI — No data</div>
+    </div>
+    {% endif %}
+
+    {% if details and details.bp %}
+    {% set sys = details.bp.split('/')[0] | int %}
+    <div class="vital-card">
+      <div class="vital-top">
+        <div class="vital-icon" style="background:#fff1f2;">💉</div>
+        <div class="vital-status-dot" style="background:
+          {% if sys < 120 %}#22c55e
+          {% elif sys < 130 %}#f59e0b
+          {% elif sys < 140 %}#f97316
+          {% else %}#ef4444{% endif %};">
+        </div>
+      </div>
+      <div class="vital-value" style="font-size:22px;">{{ details.bp }}<span class="vital-unit"> mmHg</span></div>
+      <div class="vital-label">Blood Pressure
+        — {% if sys < 120 %}Normal
+          {% elif sys < 130 %}Elevated
+          {% elif sys < 140 %}Stage 1
+          {% else %}Stage 2{% endif %}
+      </div>
+      <div class="vital-bar-wrap">
+        <div class="vital-bar" style="
+          width: {{ [([sys - 80, 0] | max) / 120 * 100, 100] | min }}%;
+          background: {% if sys < 120 %}#22c55e{% elif sys < 130 %}#f59e0b{% elif sys < 140 %}#f97316{% else %}#ef4444{% endif %};
+        "></div>
+      </div>
+    </div>
+    {% else %}
+    <div class="vital-card" style="opacity:.5;">
+      <div class="vital-icon" style="background:#fff1f2;">💉</div>
+      <div class="vital-value" style="font-size:18px; color:var(--muted);">—</div>
+      <div class="vital-label">Blood Pressure — No data</div>
+    </div>
+    {% endif %}
+
+    {% if details and details.sugar %}
+    <div class="vital-card">
+      <div class="vital-top">
+        <div class="vital-icon" style="background:#fefce8;">🩸</div>
+        <div class="vital-status-dot" style="background:
+          {% if details.sugar < 100 %}#22c55e
+          {% elif details.sugar < 126 %}#f59e0b
+          {% else %}#ef4444{% endif %};">
+        </div>
+      </div>
+      <div class="vital-value">{{ details.sugar }}<span class="vital-unit"> mg/dL</span></div>
+      <div class="vital-label">Blood Sugar
+        — {% if details.sugar < 100 %}Normal
+          {% elif details.sugar < 126 %}Prediabetic
+          {% else %}Diabetic Range{% endif %}
+      </div>
+      <div class="vital-bar-wrap">
+        <div class="vital-bar" style="
+          width: {{ [([details.sugar - 60, 0] | max) / 160 * 100, 100] | min }}%;
+          background: {% if details.sugar < 100 %}#22c55e{% elif details.sugar < 126 %}#f59e0b{% else %}#ef4444{% endif %};
+        "></div>
+      </div>
+    </div>
+    {% else %}
+    <div class="vital-card" style="opacity:.5;">
+      <div class="vital-icon" style="background:#fefce8;">🩸</div>
+      <div class="vital-value" style="font-size:18px; color:var(--muted);">—</div>
+      <div class="vital-label">Blood Sugar — No data</div>
+    </div>
+    {% endif %}
+
+    {% if details and details.age and details.weight %}
+    <div class="vital-card">
+      <div class="vital-top">
+        <div class="vital-icon" style="background:#f5f3ff;">👤</div>
+        <div class="vital-status-dot" style="background:#22c55e;"></div>
+      </div>
+      <div class="vital-value">{{ details.age }}<span class="vital-unit"> yrs</span></div>
+      <div class="vital-label">{{ details.weight }} kg · {{ details.height }} cm</div>
+      <div class="vital-bar-wrap">
+        <div class="vital-bar" style="width:{{ [details.age / 100 * 100, 100] | min }}%; background:#a78bfa;"></div>
+      </div>
+    </div>
+    {% else %}
+    <div class="vital-card" style="opacity:.5;">
+      <div class="vital-icon" style="background:#f5f3ff;">👤</div>
+      <div class="vital-value" style="font-size:18px; color:var(--muted);">—</div>
+      <div class="vital-label">Age / Weight — No data</div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- ── MIDDLE ROW: Lifestyle + Quick Actions + Tips ── -->
+<div class="mid-grid">
+
+  <!-- Lifestyle Card -->
+  <div class="card">
+    <h3>🏃 Lifestyle Factors</h3>
+    <div style="margin-top:14px;">
+
+      {% if details %}
+      <div class="lifestyle-item">
+        <div class="lf-icon" style="background:{% if details.smoking == 'yes' %}#fef2f2{% else %}#f0fdf4{% endif %};">
+          🚬
+        </div>
+        <div>
+          <div class="lf-label">Smoking</div>
+          <div class="lf-value" style="color:{% if details.smoking == 'yes' %}#dc2626{% else %}#16a34a{% endif %};">
+            {% if details.smoking == 'yes' %}Smoker ⚠️{% else %}Non-Smoker ✅{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="lifestyle-item">
+        <div class="lf-icon" style="background:{% if details.activity == 'high' %}#f0fdf4{% elif details.activity == 'moderate' %}#fefce8{% else %}#fff7ed{% endif %};">
+          💪
+        </div>
+        <div>
+          <div class="lf-label">Activity Level</div>
+          <div class="lf-value" style="color:{% if details.activity == 'high' %}#16a34a{% elif details.activity == 'moderate' %}#ca8a04{% else %}#ea580c{% endif %};">
+            {{ details.activity | capitalize }}
+            {% if details.activity == 'high' %}✅{% elif details.activity == 'moderate' %}🟡{% else %}🟠{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="lifestyle-item">
+        <div class="lf-icon" style="background:#eff6ff;">🎂</div>
+        <div>
+          <div class="lf-label">Age Group</div>
+          <div class="lf-value">
+            {% if details.age %}
+              {% if details.age < 30 %}Young Adult ({{ details.age }} yrs)
+              {% elif details.age < 45 %}Adult ({{ details.age }} yrs)
+              {% elif details.age < 60 %}Middle-Aged ({{ details.age }} yrs)
+              {% else %}Senior ({{ details.age }} yrs){% endif %}
+            {% else %}—{% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% else %}
+      <div style="color:var(--muted); font-size:14px; padding:20px 0; text-align:center;">
+        No lifestyle data yet.<br>
+        <a href="/health-data" style="color:var(--teal); font-weight:600;">Add Health Data →</a>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card">
+    <h3>⚡ Quick Actions</h3>
+    <div class="action-grid" style="margin-top:14px;">
+      <a href="/health-data" class="action-btn">
+        <div class="action-icon">📋</div>
+        <div>Update<br>Health Data</div>
+      </a>
+      <a href="/prediction" class="action-btn">
+        <div class="action-icon">🤖</div>
+        <div>AI Risk<br>Prediction</div>
+      </a>
+      <a href="/chatbot" class="action-btn">
+        <div class="action-icon">💬</div>
+        <div>Health<br>Chatbot</div>
+      </a>
+      <a href="/bmi" class="action-btn">
+        <div class="action-icon">⚖️</div>
+        <div>BMI<br>Calculator</div>
+      </a>
+      <a href="/emergency" class="action-btn danger" style="grid-column: span 2;">
+        <div class="action-icon">🚨</div>
+        <div>Emergency Alert</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Health Tips -->
+  <div class="card">
+    <h3>💡 Health Tips for You</h3>
+    <div style="margin-top:14px;">
+      {% if details %}
+        {% if details.smoking == 'yes' %}
+        <div class="tip-item">
+          <div class="tip-dot" style="background:#ef4444;"></div>
+          <div class="tip-text">Quitting smoking can reduce heart disease risk by up to 50% within 1 year.</div>
+        </div>
+        {% endif %}
+
+        {% if details.activity == 'low' %}
+        <div class="tip-item">
+          <div class="tip-dot" style="background:#f59e0b;"></div>
+          <div class="tip-text">Try 30 minutes of walking daily — it significantly improves cardiovascular health.</div>
+        </div>
+        {% endif %}
+
+        {% if details.sugar and details.sugar >= 100 %}
+        <div class="tip-item">
+          <div class="tip-dot" style="background:#f97316;"></div>
+          <div class="tip-text">Your blood sugar is elevated. Reduce sugary drinks and processed carbs.</div>
+        </div>
+        {% endif %}
+
+        {% if details.bp %}
+          {% set sys = details.bp.split('/')[0] | int %}
+          {% if sys >= 130 %}
+          <div class="tip-item">
+            <div class="tip-dot" style="background:#ef4444;"></div>
+            <div class="tip-text">Reduce salt intake and manage stress to help lower your blood pressure.</div>
+          </div>
+          {% endif %}
+        {% endif %}
+
+        <div class="tip-item">
+          <div class="tip-dot"></div>
+          <div class="tip-text">Drink 8–10 glasses of water daily and sleep 7–8 hours for optimal health.</div>
+        </div>
+
+      {% else %}
+        <div class="tip-item">
+          <div class="tip-dot"></div>
+          <div class="tip-text">Add your health data to receive personalised tips based on your vitals.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-dot"></div>
+          <div class="tip-text">Regular health monitoring helps detect issues early and prevent complications.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-dot"></div>
+          <div class="tip-text">Aim for 30 minutes of moderate exercise at least 5 days a week.</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- ── BOTTOM ROW: Chart + AI Risk ── -->
+<div class="bottom-grid">
+
+  <!-- Health Score Breakdown Chart -->
+  <div class="card">
+    <h3>📊 Health Score Breakdown</h3>
+    <div class="chart-wrap">
+      <canvas id="breakdownChart"></canvas>
+    </div>
+  </div>
+
+  <!-- AI Risk Summary -->
+  <div class="card">
+    <h3>🤖 AI Risk Assessment</h3>
+    <p class="text-sm text-muted" style="margin-top:6px;">Based on your health data</p>
+
+    <div class="risk-row">
+      <div class="risk-item">
+        <div class="risk-top">
+          <div class="risk-name">❤️ Heart Disease Risk</div>
+          {% if details %}
+            {% if details.bp %}{% set sys = details.bp.split('/')[0] | int %}{% else %}{% set sys = 110 %}{% endif %}
+            {% if details.smoking == 'yes' %}{% set smoke_risk = 30 %}{% else %}{% set smoke_risk = 0 %}{% endif %}
+            {% if details.age and details.age > 50 %}{% set age_risk = 20 %}{% elif details.age and details.age > 35 %}{% set age_risk = 10 %}{% else %}{% set age_risk = 0 %}{% endif %}
+            {% set heart_est = ([([sys - 100, 0] | max) / 2 + smoke_risk + age_risk, 95] | min) %}
+            <div class="risk-pct" style="color:{% if heart_est > 60 %}#ef4444{% elif heart_est > 30 %}#f59e0b{% else %}#22c55e{% endif %};">
+              ~{{ heart_est | round | int }}%
+            </div>
+          {% else %}
+            <div class="risk-pct" style="color:var(--muted);">—</div>
+          {% endif %}
+        </div>
+        <div class="vital-bar-wrap">
+          <div class="vital-bar" style="
+            width: {% if details %}{{ heart_est }}{% else %}0{% endif %}%;
+            background: {% if details and heart_est > 60 %}#ef4444{% elif details and heart_est > 30 %}#f59e0b{% else %}#22c55e{% endif %};
+          "></div>
+        </div>
+      </div>
+
+      <div class="risk-item">
+        <div class="risk-top">
+          <div class="risk-name">🩸 Diabetes Risk</div>
+          {% if details and details.sugar %}
+            {% if details.sugar >= 126 %}{% set diab_est = 75 %}
+            {% elif details.sugar >= 100 %}{% set diab_est = 40 %}
+            {% else %}{% set diab_est = 15 %}{% endif %}
+            {% if details.smoking == 'yes' %}{% set diab_est = diab_est + 10 %}{% endif %}
+            {% if details.activity == 'low' %}{% set diab_est = diab_est + 10 %}{% endif %}
+            <div class="risk-pct" style="color:{% if diab_est > 60 %}#ef4444{% elif diab_est > 30 %}#f59e0b{% else %}#22c55e{% endif %};">
+              ~{{ [diab_est, 95] | min }}%
+            </div>
+          {% else %}
+            <div class="risk-pct" style="color:var(--muted);">—</div>
+          {% endif %}
+        </div>
+        <div class="vital-bar-wrap">
+          <div class="vital-bar" style="
+            width: {% if details and details.sugar %}{{ [diab_est, 95] | min }}{% else %}0{% endif %}%;
+            background: {% if details and details.sugar and diab_est > 60 %}#ef4444{% elif details and details.sugar and diab_est > 30 %}#f59e0b{% else %}#22c55e{% endif %};
+          "></div>
+        </div>
+      </div>
+    </div>
+
+    <a href="/prediction" class="btn" style="margin-top:16px; width:100%; justify-content:center;">
+      Run Full AI Prediction →
+    </a>
+  </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Today's date
+  document.getElementById('today-date').textContent =
+    new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  // Health Score Breakdown Chart
+  const ctx = document.getElementById('breakdownChart').getContext('2d');
+  {% if score and details %}
+    {% set h = details.height / 100 if details.height else 1 %}
+    {% set bv = (details.weight / (h * h)) | round(1) if details.height and details.weight else 0 %}
+    {% if 18.5 <= bv <= 24.9 %}{% set bmi_s = 25 %}
+    {% elif 17.0 <= bv < 18.5 or 25.0 <= bv < 27.5 %}{% set bmi_s = 18 %}
+    {% elif bv < 17.0 or bv >= 30.0 %}{% set bmi_s = 7 %}
+    {% else %}{% set bmi_s = 12 %}{% endif %}
+
+    {% if details.bp %}
+      {% set sys = details.bp.split('/')[0] | int %}
+      {% if sys < 120 %}{% set bp_s = 25 %}
+      {% elif sys < 130 %}{% set bp_s = 20 %}
+      {% elif sys < 140 %}{% set bp_s = 14 %}
+      {% else %}{% set bp_s = 7 %}{% endif %}
+    {% else %}{% set bp_s = 0 %}{% endif %}
+
+    {% if details.sugar %}
+      {% if 70 <= details.sugar <= 99 %}{% set sg_s = 25 %}
+      {% elif details.sugar <= 125 %}{% set sg_s = 15 %}
+      {% elif details.sugar <= 180 %}{% set sg_s = 8 %}
+      {% else %}{% set sg_s = 3 %}{% endif %}
+    {% else %}{% set sg_s = 0 %}{% endif %}
+
+    {% set ls_s = score - bmi_s - bp_s - sg_s %}
+    {% set ls_s = [ls_s, 0] | max %}
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['BMI', 'Blood Pressure', 'Blood Sugar', 'Lifestyle'],
+      datasets: [{
+        label: 'Score (max 25 each)',
+        data: [{{ bmi_s }}, {{ bp_s }}, {{ sg_s }}, {{ ls_s }}],
+        backgroundColor: ['#14b8a6','#0d9488','#0f766e','#115e59'],
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true, max: 25,
+          grid: { color: '#f1f5f9' },
+          ticks: { color: '#94a3b8', font: { size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: '#64748b', font: { size: 12 } }
+        }
+      }
+    }
+  });
+  {% else %}
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['BMI', 'Blood Pressure', 'Blood Sugar', 'Lifestyle'],
+      datasets: [{
+        label: 'Score',
+        data: [0, 0, 0, 0],
+        backgroundColor: '#e2e8f0',
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, max: 25, grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8' } },
+        x: { grid: { display: false }, ticks: { color: '#64748b' } }
+      }
+    }
+  });
+  {% endif %}
+</script>
+
+{% endblock %}

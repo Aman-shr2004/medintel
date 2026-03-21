@@ -1,0 +1,819 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ── Page Header ── */
+.bmi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ── Top Grid ── */
+.bmi-top-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── BMI Score Card ── */
+.bmi-score-card {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ── Gauge ── */
+.gauge-wrap {
+  position: relative;
+  width: 200px;
+  height: 120px;
+  margin: 10px auto 0;
+}
+
+.gauge-wrap svg {
+  overflow: visible;
+}
+
+.gauge-label {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.gauge-num {
+  font-family: 'Fraunces', serif;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gauge-unit {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── BMI Category Badge ── */
+.bmi-cat-badge {
+  margin-top: 20px;
+  padding: 8px 22px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bmi-message {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 12px;
+  line-height: 1.5;
+  max-width: 220px;
+}
+
+.bmi-details-row {
+  display: flex;
+  gap: 20px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  justify-content: center;
+}
+
+.bmi-detail-item {
+  text-align: center;
+}
+
+.bmi-detail-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.bmi-detail-lbl {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── Right panel ── */
+.bmi-right-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ── Metric card ── */
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: box-shadow .2s;
+}
+
+.metric-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.07); }
+
+.metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.metric-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.metric-val {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.metric-unit {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.metric-lbl {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.metric-bar-bg {
+  height: 5px;
+  background: #f1f5f9;
+  border-radius: 99px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  height: 5px;
+  border-radius: 99px;
+}
+
+/* ── BMI Scale Visual ── */
+.scale-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.scale-track {
+  position: relative;
+  height: 20px;
+  border-radius: 99px;
+  background: linear-gradient(to right, #3b82f6 0%, #22c55e 30%, #f59e0b 55%, #ef4444 80%, #dc2626 100%);
+  margin: 24px 0 10px;
+}
+
+.scale-needle {
+  position: absolute;
+  top: -8px;
+  width: 4px;
+  height: 36px;
+  background: var(--text);
+  border-radius: 99px;
+  transform: translateX(-50%);
+  transition: left .6s cubic-bezier(.4,0,.2,1);
+}
+
+.scale-needle::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--text);
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  padding: 0 2px;
+}
+
+.scale-cats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.scale-cat {
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid transparent;
+  transition: all .2s;
+}
+
+.scale-cat.active {
+  border-width: 2px;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+.scale-cat-name { font-size: 12px; font-weight: 700; }
+.scale-cat-range { font-size: 11px; margin-top: 2px; opacity: .75; }
+
+/* ── Middle grid ── */
+.bmi-mid-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── Ideal weight card ── */
+.ideal-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ideal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.ideal-formula { font-size: 12px; color: var(--muted); }
+.ideal-result { font-size: 15px; font-weight: 700; color: var(--teal-dark); }
+
+/* ── Tips ── */
+.tip-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.tip-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.tip-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.tip-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ── Live Calculator ── */
+.calc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  align-items: end;
+  margin-top: 16px;
+}
+
+.calc-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+
+.calc-input-wrap:focus-within {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,148,136,.1);
+}
+
+.calc-input-wrap input {
+  border: none;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+}
+
+.calc-input-wrap input:focus { box-shadow: none; }
+
+.calc-unit {
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  white-space: nowrap;
+  display: flex; align-items: center;
+  height: 100%;
+}
+
+.calc-result {
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  border-radius: 14px;
+  padding: 20px;
+  color: #fff;
+  text-align: center;
+  margin-top: 16px;
+  display: none;
+}
+
+.calc-result.show { display: block; }
+
+.calc-bmi-num {
+  font-family: 'Fraunces', serif;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.calc-bmi-cat {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 6px;
+  opacity: .9;
+}
+
+.calc-bmi-msg {
+  font-size: 13px;
+  opacity: .75;
+  margin-top: 8px;
+}
+
+/* ── No data ── */
+.no-data-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 32px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .bmi-top-grid  { grid-template-columns: 1fr; }
+  .bmi-right-grid { grid-template-columns: 1fr 1fr; }
+  .bmi-mid-grid  { grid-template-columns: 1fr; }
+  .calc-grid     { grid-template-columns: 1fr 1fr; }
+  .scale-cats    { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+<!-- ── Header ── -->
+<div class="bmi-header">
+  <div>
+    <h2>⚖️ BMI Calculator</h2>
+    <div style="font-size:13px; color:var(--muted); margin-top:4px;">
+      Body Mass Index — a measure of body fat based on height and weight
+    </div>
+  </div>
+  <a href="/health-data" class="btn btn-ghost">📋 Update Health Data</a>
+</div>
+
+{% if bmi %}
+
+<!-- ── TOP ROW ── -->
+<div class="bmi-top-grid">
+
+  <!-- BMI Score Card with Gauge -->
+  <div class="bmi-score-card">
+    <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted);">Your BMI</div>
+
+    <!-- Semicircle Gauge -->
+    {% set needle_pct = ([([bmi - 10, 0] | max) / 30, 1] | min) %}
+    {% set needle_deg = ((needle_pct * 180) - 90) | round(1) %}
+    <div class="gauge-wrap">
+      <svg width="200" height="110" viewBox="0 0 200 110">
+        <!-- Background arc segments -->
+        <path d="M 20 100 A 80 80 0 0 1 50 27" fill="none" stroke="#3b82f6" stroke-width="14" stroke-linecap="round"/>
+        <path d="M 53 25 A 80 80 0 0 1 105 20" fill="none" stroke="#22c55e" stroke-width="14" stroke-linecap="round"/>
+        <path d="M 108 20 A 80 80 0 0 1 155 34" fill="none" stroke="#f59e0b" stroke-width="14" stroke-linecap="round"/>
+        <path d="M 157 36 A 80 80 0 0 1 178 98" fill="none" stroke="#ef4444" stroke-width="14" stroke-linecap="round"/>
+        <!-- Needle using CSS rotate (no cos/sin needed) -->
+        <g transform="translate(100,100) rotate({{ needle_deg }})">
+          <line x1="0" y1="0" x2="0" y2="-65"
+                stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <circle cx="100" cy="100" r="7" fill="#1e293b"/>
+      </svg>
+      <div class="gauge-label">
+        <div class="gauge-num" style="color:
+          {% if bmi < 18.5 %}#3b82f6
+          {% elif bmi <= 24.9 %}#22c55e
+          {% elif bmi <= 29.9 %}#f59e0b
+          {% else %}#ef4444{% endif %};">{{ bmi }}</div>
+      </div>
+    </div>
+    <div style="font-size:12px; color:var(--muted); margin-top:6px; text-align:center;">kg/m²</div>
+
+    <div class="bmi-cat-badge" style="
+      {% if bmi < 18.5 %}background:#eff6ff; color:#2563eb; border:2px solid #bfdbfe;
+      {% elif bmi <= 24.9 %}background:#f0fdf4; color:#16a34a; border:2px solid #bbf7d0;
+      {% elif bmi <= 29.9 %}background:#fefce8; color:#ca8a04; border:2px solid #fde68a;
+      {% else %}background:#fef2f2; color:#dc2626; border:2px solid #fecaca;{% endif %}">
+      {% if bmi < 18.5 %}📉 Underweight
+      {% elif bmi <= 24.9 %}✅ Normal Weight
+      {% elif bmi <= 29.9 %}⚠️ Overweight
+      {% else %}🔴 Obese{% endif %}
+    </div>
+
+    <div class="bmi-message">
+      {% if bmi < 18.5 %}Consider increasing caloric intake with nutrient-rich foods. Consult a nutritionist.
+      {% elif bmi <= 24.9 %}You are in the healthy weight range. Keep maintaining your lifestyle!
+      {% elif bmi <= 29.9 %}A balanced diet and regular exercise can help you reach a healthy BMI.
+      {% else %}Please consult a doctor for a personalised health and weight management plan.{% endif %}
+    </div>
+
+    <div class="bmi-details-row">
+      <div class="bmi-detail-item">
+        <div class="bmi-detail-val">{{ details.weight }} kg</div>
+        <div class="bmi-detail-lbl">Weight</div>
+      </div>
+      <div style="width:1px; background:var(--border);"></div>
+      <div class="bmi-detail-item">
+        <div class="bmi-detail-val">{{ details.height }} cm</div>
+        <div class="bmi-detail-lbl">Height</div>
+      </div>
+      {% if details.age %}
+      <div style="width:1px; background:var(--border);"></div>
+      <div class="bmi-detail-item">
+        <div class="bmi-detail-val">{{ details.age }} yrs</div>
+        <div class="bmi-detail-lbl">Age</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right Metric Cards -->
+  <div class="bmi-right-grid">
+
+    <!-- Ideal Weight Range -->
+    {% set h = details.height / 100 %}
+    {% set ideal_min = (18.5 * h * h) | round(1) %}
+    {% set ideal_max = (24.9 * h * h) | round(1) %}
+    {% set diff = (details.weight - ideal_max) | round(1) %}
+    <div class="metric-card">
+      <div class="metric-top">
+        <div class="metric-icon" style="background:#f0fdf4;">🎯</div>
+        <span style="font-size:11px; color:var(--muted);">for your height</span>
+      </div>
+      <div class="metric-val">{{ ideal_min }}–{{ ideal_max }}<span class="metric-unit"> kg</span></div>
+      <div class="metric-lbl">Ideal Weight Range</div>
+      <div class="metric-bar-bg">
+        <div class="metric-bar-fill" style="
+          width:{{ [([details.weight - ideal_min, 0] | max) / (ideal_max - ideal_min + 20) * 100, 100] | min }}%;
+          background:{% if ideal_min <= details.weight <= ideal_max %}#22c55e{% else %}#ef4444{% endif %};
+        "></div>
+      </div>
+    </div>
+
+    <!-- Weight to Lose/Gain -->
+    <div class="metric-card">
+      <div class="metric-top">
+        <div class="metric-icon" style="background:{% if diff > 0 %}#fef2f2{% elif diff < -1 %}#eff6ff{% else %}#f0fdf4{% endif %};">
+          {% if diff > 0 %}📉{% elif diff < -1 %}📈{% else %}✅{% endif %}
+        </div>
+        <span style="font-size:11px; color:var(--muted);">to reach ideal</span>
+      </div>
+      {% if diff > 0 %}
+        <div class="metric-val" style="color:#dc2626;">{{ diff }}<span class="metric-unit"> kg</span></div>
+        <div class="metric-lbl">To lose for healthy BMI</div>
+      {% elif diff < -1 %}
+        <div class="metric-val" style="color:#2563eb;">{{ (diff | abs) }}<span class="metric-unit"> kg</span></div>
+        <div class="metric-lbl">To gain for healthy BMI</div>
+      {% else %}
+        <div class="metric-val" style="color:#16a34a;">Perfect!</div>
+        <div class="metric-lbl">You are in ideal range ✅</div>
+      {% endif %}
+      <div class="metric-bar-bg">
+        <div class="metric-bar-fill" style="
+          width:{% if diff > 0 %}{{ [diff / 30 * 100, 100] | min }}{% elif diff < -1 %}{{ [(diff | abs) / 20 * 100, 100] | min }}{% else %}100{% endif %}%;
+          background:{% if diff > 0 %}#ef4444{% elif diff < -1 %}#3b82f6{% else %}#22c55e{% endif %};
+        "></div>
+      </div>
+    </div>
+
+    <!-- Estimated Body Fat -->
+    {% if details.age %}
+    {% set age = details.age %}
+    {% if bmi < 18.5 %}{% set bf = (bmi * 1.2 + age * 0.23 - 5.4) | round(1) %}
+    {% elif bmi <= 24.9 %}{% set bf = (bmi * 1.2 + age * 0.23 - 5.4) | round(1) %}
+    {% else %}{% set bf = (bmi * 1.2 + age * 0.23 - 5.4) | round(1) %}
+    {% endif %}
+    {% set bf = [bf, 5] | max %}
+    <div class="metric-card">
+      <div class="metric-top">
+        <div class="metric-icon" style="background:#f5f3ff;">🫀</div>
+        <span style="font-size:11px; color:var(--muted);">estimated</span>
+      </div>
+      <div class="metric-val">{{ bf }}<span class="metric-unit">%</span></div>
+      <div class="metric-lbl">Body Fat (approx)</div>
+      <div class="metric-bar-bg">
+        <div class="metric-bar-fill" style="
+          width:{{ [bf * 2, 100] | min }}%;
+          background:{% if bf < 20 %}#22c55e{% elif bf < 30 %}#f59e0b{% else %}#ef4444{% endif %};
+        "></div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Healthy BMI Status -->
+    <div class="metric-card">
+      <div class="metric-top">
+        <div class="metric-icon" style="background:#fefce8;">📊</div>
+        <span style="font-size:11px; color:var(--muted);">WHO standard</span>
+      </div>
+      <div class="metric-val" style="font-size:18px; color:
+        {% if bmi < 18.5 %}#2563eb
+        {% elif bmi <= 24.9 %}#16a34a
+        {% elif bmi <= 29.9 %}#ca8a04
+        {% else %}#dc2626{% endif %};">
+        {% if bmi < 18.5 %}Underweight
+        {% elif bmi <= 24.9 %}Healthy
+        {% elif bmi <= 29.9 %}Overweight
+        {% else %}Obese{% endif %}
+      </div>
+      <div class="metric-lbl">Your BMI Category</div>
+      <div class="metric-bar-bg">
+        <div class="metric-bar-fill" style="
+          width:{{ [bmi / 40 * 100, 100] | min }}%;
+          background:{% if bmi <= 24.9 %}#22c55e{% elif bmi <= 29.9 %}#f59e0b{% else %}#ef4444{% endif %};
+        "></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── BMI Scale Visual ── -->
+<div class="scale-card">
+  <h3>📏 BMI Scale — Where You Stand</h3>
+  <div class="scale-track">
+    {% set needle_pos = ([([bmi - 10, 0] | max) / 30 * 100, 98] | min) %}
+    <div class="scale-needle" style="left:{{ needle_pos }}%;"></div>
+  </div>
+  <div class="scale-labels">
+    <span>10</span>
+    <span>18.5</span>
+    <span>25</span>
+    <span>30</span>
+    <span>40+</span>
+  </div>
+  <div class="scale-cats">
+    <div class="scale-cat {% if bmi < 18.5 %}active{% endif %}"
+         style="background:#eff6ff; {% if bmi < 18.5 %}border-color:#3b82f6;{% endif %}">
+      <div class="scale-cat-name" style="color:#2563eb;">Underweight</div>
+      <div class="scale-cat-range" style="color:#2563eb;">Below 18.5</div>
+    </div>
+    <div class="scale-cat {% if 18.5 <= bmi <= 24.9 %}active{% endif %}"
+         style="background:#f0fdf4; {% if 18.5 <= bmi <= 24.9 %}border-color:#22c55e;{% endif %}">
+      <div class="scale-cat-name" style="color:#16a34a;">Normal ✅</div>
+      <div class="scale-cat-range" style="color:#16a34a;">18.5 – 24.9</div>
+    </div>
+    <div class="scale-cat {% if 25 <= bmi <= 29.9 %}active{% endif %}"
+         style="background:#fefce8; {% if 25 <= bmi <= 29.9 %}border-color:#f59e0b;{% endif %}">
+      <div class="scale-cat-name" style="color:#ca8a04;">Overweight ⚠️</div>
+      <div class="scale-cat-range" style="color:#ca8a04;">25.0 – 29.9</div>
+    </div>
+    <div class="scale-cat {% if bmi >= 30 %}active{% endif %}"
+         style="background:#fef2f2; {% if bmi >= 30 %}border-color:#ef4444;{% endif %}">
+      <div class="scale-cat-name" style="color:#dc2626;">Obese 🔴</div>
+      <div class="scale-cat-range" style="color:#dc2626;">30.0 and above</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MIDDLE: Ideal Weight + Tips ── -->
+<div class="bmi-mid-grid">
+
+  <!-- Ideal Weight Formulas -->
+  <div class="scale-card" style="margin-bottom:0;">
+    <h3>🎯 Ideal Weight Formulas</h3>
+    <p class="text-sm text-muted" style="margin-top:4px;">Based on your height of {{ details.height }} cm</p>
+    {% set hcm = details.height %}
+    <div class="ideal-row">
+      <div class="ideal-item">
+        <div>
+          <div style="font-size:13px; font-weight:600; color:var(--text);">BMI Method</div>
+          <div class="ideal-formula">Ideal range (BMI 18.5–24.9)</div>
+        </div>
+        <div class="ideal-result">{{ ideal_min }}–{{ ideal_max }} kg</div>
+      </div>
+      <div class="ideal-item">
+        <div>
+          <div style="font-size:13px; font-weight:600; color:var(--text);">Devine Formula</div>
+          <div class="ideal-formula">50 + 0.9 × (cm − 152)</div>
+        </div>
+        <div class="ideal-result">{{ (50 + 0.9 * (hcm - 152)) | round(1) }} kg</div>
+      </div>
+      <div class="ideal-item">
+        <div>
+          <div style="font-size:13px; font-weight:600; color:var(--text);">Robinson Formula</div>
+          <div class="ideal-formula">52 + 0.75 × (cm − 152)</div>
+        </div>
+        <div class="ideal-result">{{ (52 + 0.75 * (hcm - 152)) | round(1) }} kg</div>
+      </div>
+      <div class="ideal-item">
+        <div>
+          <div style="font-size:13px; font-weight:600; color:var(--text);">Miller Formula</div>
+          <div class="ideal-formula">56.2 + 0.56 × (cm − 152)</div>
+        </div>
+        <div class="ideal-result">{{ (56.2 + 0.56 * (hcm - 152)) | round(1) }} kg</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Personalised Tips -->
+  <div class="scale-card" style="margin-bottom:0;">
+    <h3>💡 Personalised Recommendations</h3>
+    <p class="text-sm text-muted" style="margin-top:4px;">Based on your BMI of {{ bmi }}</p>
+    <div class="tip-row">
+      {% if bmi < 18.5 %}
+        <div class="tip-item">
+          <div class="tip-icon">🥗</div>
+          <div class="tip-text">Increase caloric intake with nutrient-dense foods like nuts, avocados, whole grains and lean proteins.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-icon">💪</div>
+          <div class="tip-text">Add strength training 3x/week to build lean muscle mass and increase your weight healthily.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-icon">👨‍⚕️</div>
+          <div class="tip-text">Consult a nutritionist or doctor — being underweight can weaken your immune system.</div>
+        </div>
+      {% elif bmi <= 24.9 %}
+        <div class="tip-item">
+          <div class="tip-icon">✅</div>
+          <div class="tip-text">Great job! You're in the healthy BMI range. Maintain your current diet and exercise habits.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-icon">🏃</div>
+          <div class="tip-text">Aim for 150 minutes of moderate exercise weekly to maintain your healthy weight.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-icon">💧</div>
+          <div class="tip-text">Stay hydrated with 8–10 glasses of water daily to support metabolism.</div>
+        </div>
+      {% elif bmi <= 29.9 %}
+        <div class="tip-item">
+          <div class="tip-icon">🥗</div>
+          <div class="tip-text">Reduce processed foods, sugar, and refined carbs. Focus on vegetables, lean proteins, and whole grains.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-icon">🚶</div>
+          <div class="tip-text">Start with 30 minutes of brisk walking daily — it is one of the most effective ways to lose weight.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-icon">📉</div>
+          <div class="tip-text">A deficit of 500 calories/day leads to ~0.5 kg loss per week — safe and sustainable.</div>
+        </div>
+      {% else %}
+        <div class="tip-item">
+          <div class="tip-icon">👨‍⚕️</div>
+          <div class="tip-text">Please consult a doctor for a structured weight loss program — obesity increases risk of diabetes and heart disease.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-icon">🥗</div>
+          <div class="tip-text">Begin with small dietary changes — replace sugary drinks with water and reduce portion sizes.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-icon">🏊</div>
+          <div class="tip-text">Low-impact exercises like swimming or cycling are easier on joints and very effective.</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% else %}
+
+<!-- ── No Data State ── -->
+<div class="no-data-card">
+  <div style="font-size:56px; margin-bottom:16px;">⚖️</div>
+  <h3 style="font-size:20px; margin-bottom:8px;">No Health Data Found</h3>
+  <p style="color:var(--muted); max-width:360px; margin:0 auto 24px;">
+    Please add your height and weight in Health Data to calculate your BMI and get personalised insights.
+  </p>
+  <a href="/health-data" class="btn" style="padding:12px 28px;">📋 Add Health Data →</a>
+</div>
+
+{% endif %}
+
+<!-- ── Live BMI Calculator (always shown) ── -->
+<div class="calc-card">
+  <h3>🧮 Live BMI Calculator</h3>
+  <p class="text-sm text-muted" style="margin-top:4px;">Try different values instantly</p>
+
+  <div class="calc-grid">
+    <div>
+      <label style="margin-bottom:8px;">Weight</label>
+      <div class="calc-input-wrap">
+        <input type="number" id="c-weight" placeholder="70" min="20" max="300"
+               oninput="liveBMI()" value="{{ details.weight if details else '' }}">
+        <div class="calc-unit">kg</div>
+      </div>
+    </div>
+    <div>
+      <label style="margin-bottom:8px;">Height</label>
+      <div class="calc-input-wrap">
+        <input type="number" id="c-height" placeholder="170" min="100" max="250"
+               oninput="liveBMI()" value="{{ details.height if details else '' }}">
+        <div class="calc-unit">cm</div>
+      </div>
+    </div>
+    <div>
+      <label style="margin-bottom:8px;">&nbsp;</label>
+      <button onclick="liveBMI()" class="btn" style="width:100%; justify-content:center;">
+        Calculate →
+      </button>
+    </div>
+  </div>
+
+  <div class="calc-result" id="calc-result">
+    <div class="calc-bmi-num" id="c-bmi-num">—</div>
+    <div class="calc-bmi-cat" id="c-bmi-cat"></div>
+    <div class="calc-bmi-msg" id="c-bmi-msg"></div>
+  </div>
+</div>
+
+<script>
+function liveBMI() {
+  const w   = parseFloat(document.getElementById('c-weight').value);
+  const h   = parseFloat(document.getElementById('c-height').value) / 100;
+  const res = document.getElementById('calc-result');
+
+  if (!w || !h || h <= 0) { res.classList.remove('show'); return; }
+
+  const bmi = (w / (h * h)).toFixed(1);
+  let cat, msg, bg;
+
+  if      (bmi < 18.5) { cat='Underweight 📉'; msg='Consider increasing caloric intake with nutritious foods.'; bg='linear-gradient(135deg,#1d4ed8,#2563eb)'; }
+  else if (bmi <= 24.9){ cat='Normal Weight ✅'; msg='You are in the healthy BMI range. Keep it up!'; bg='linear-gradient(135deg,#15803d,#16a34a)'; }
+  else if (bmi <= 29.9){ cat='Overweight ⚠️'; msg='A balanced diet and exercise will help you reach a healthy BMI.'; bg='linear-gradient(135deg,#b45309,#d97706)'; }
+  else                 { cat='Obese 🔴'; msg='Please consult a doctor for a personalised health plan.'; bg='linear-gradient(135deg,#b91c1c,#dc2626)'; }
+
+  document.getElementById('c-bmi-num').textContent = bmi;
+  document.getElementById('c-bmi-cat').textContent = cat;
+  document.getElementById('c-bmi-msg').textContent = msg;
+  res.style.background = bg;
+  res.classList.add('show');
+}
+
+// Auto-run on load if values exist
+window.addEventListener('load', liveBMI);
+</script>
+
+{% endblock %}
