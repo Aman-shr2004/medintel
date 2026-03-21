@@ -4,7 +4,7 @@ Werkzeug==3.0.1
 scikit-learn==1.4.0
 numpy==1.26.4
 pandas==2.2.0
-groq==0.11.0
+groq==0.13.0
 python-dotenv==1.0.0
 psycopg2-binary==2.9.9
 gunicorn==21.2.0
