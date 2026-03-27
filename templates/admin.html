@@ -180,6 +180,41 @@
   transform: translateY(-1px);
 }
 
+.del-btn {
+  margin-left: 8px;
+  background: none;
+  border: 1.5px solid #fca5a5;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #dc2626;
+  transition: all .15s;
+  width: auto;
+  flex-shrink: 0;
+}
+.del-btn:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+  transform: scale(1.1);
+}
+
+/* ── Toast notification ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #0f172a; color: #fff;
+  padding: 12px 20px; border-radius: 12px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
+  z-index: 999; opacity: 0;
+  transform: translateY(10px);
+  transition: all .3s;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #166534; }
+.toast.error   { background: #991b1b; }
+
 @media (max-width: 900px) {
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .admin-main  { grid-template-columns: 1fr; }
@@ -257,6 +292,9 @@
           <div class="user-email">{{ u.email }}</div>
         </div>
         <span class="role-badge rb-{{ u.role }}">{{ u.role | capitalize }}</span>
+        {% if u.role != 'admin' %}
+        <button class="del-btn" onclick="deleteUser({{ u.id }}, '{{ u.name | title }}')" title="Delete user">🗑️</button>
+        {% endif %}
       </div>
       {% endfor %}
     {% else %}
@@ -357,8 +395,33 @@
 
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function deleteUser(userId, userName) {
+  if (!confirm(`Are you sure you want to delete "${userName}"?\n\nThis will also delete all their appointments, prescriptions, and predictions!`)) return;
+  try {
+    const res = await fetch(`/admin/delete-user/${userId}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      showToast(data.msg, 'success');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showToast(data.msg, 'error');
+    }
+  } catch(e) {
+    showToast('Something went wrong!', 'error');
+  }
+}
+
 document.getElementById('admin-date').textContent =
   new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 

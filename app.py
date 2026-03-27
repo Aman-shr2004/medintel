@@ -122,6 +122,10 @@ diabetes_model, diabetes_scaler  = diabetes_payload if isinstance(diabetes_paylo
 
 # ─── OTP Helpers ──────────────────────────────────────────────────────────────
 
+# In-memory OTP store: { email: { otp, expiry, purpose } }
+# This avoids Flask session persistence issues across requests.
+_otp_store = {}
+
 def generate_otp():
     return "".join(random.choices(string.digits, k=6))
 
@@ -132,7 +136,7 @@ def send_otp_email(to_email, otp, purpose="login"):
     if not sender_email or not sender_password:
         # Dev mode — print OTP to console so you can still test
         print(f"⚠️  MAIL not configured. OTP for {to_email}: {otp}")
-        return True
+        return True, True  # (sent_ok, is_dev_mode)
 
     action = "log in to" if purpose == "login" else "verify your email for"
     html_body = f"""
@@ -166,10 +170,10 @@ def send_otp_email(to_email, otp, purpose="login"):
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
             smtp.login(sender_email, sender_password)
             smtp.sendmail(sender_email, to_email, msg.as_string())
-        return True
+        return True, False  # (sent_ok, is_dev_mode)
     except Exception as e:
         print(f"Email send error: {e}")
-        return False
+        return False, False
 
 # ─── OTP Routes ───────────────────────────────────────────────────────────────
 
@@ -192,39 +196,47 @@ def send_otp():
     otp    = generate_otp()
     expiry = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
 
-    session["otp"]         = otp
-    session["otp_email"]   = email
-    session["otp_expiry"]  = expiry.isoformat()
-    session["otp_purpose"] = purpose
+    # Store OTP in memory (not session) to avoid cookie/session persistence issues
+    _otp_store[email] = {
+        "otp":     otp,
+        "expiry":  expiry.isoformat(),
+        "purpose": purpose,
+    }
 
-    ok = send_otp_email(email, otp, purpose)
+    ok, is_dev = send_otp_email(email, otp, purpose)
     if ok:
-        return jsonify({"ok": True, "msg": f"OTP sent to {email}"})
-    return jsonify({"ok": False, "msg": "Failed to send email. Please check MAIL settings."})
+        resp = {"ok": True, "msg": f"OTP sent to {email}"}
+        # In dev mode (no mail configured), include OTP in response for testing
+        if is_dev:
+            resp["dev_otp"] = otp
+            resp["msg"] = f"[DEV MODE] Mail not configured. OTP: {otp}"
+        return jsonify(resp)
+    return jsonify({"ok": False, "msg": "Failed to send email. Please configure MAIL_USERNAME and MAIL_PASSWORD in your .env file."})
 
 @app.route("/verify-otp", methods=["POST"])
 def verify_otp():
     data  = request.get_json()
     code  = (data.get("otp") or "").strip()
-    email = session.get("otp_email", "")
+    email = (data.get("email") or "").strip().lower()
 
-    stored_otp    = session.get("otp")
-    stored_expiry = session.get("otp_expiry")
-    purpose       = session.get("otp_purpose", "login")
+    # Look up OTP from in-memory store
+    record = _otp_store.get(email)
 
-    if not stored_otp or not stored_expiry:
-        return jsonify({"ok": False, "msg": "No OTP session. Please request a new one."})
+    if not record:
+        return jsonify({"ok": False, "msg": "No OTP found for this email. Please request a new one."})
 
-    expiry = datetime.datetime.fromisoformat(stored_expiry)
+    expiry  = datetime.datetime.fromisoformat(record["expiry"])
+    purpose = record["purpose"]
+
     if datetime.datetime.utcnow() > expiry:
+        _otp_store.pop(email, None)
         return jsonify({"ok": False, "msg": "OTP expired. Please request a new one."})
 
-    if code != stored_otp:
+    if code != record["otp"]:
         return jsonify({"ok": False, "msg": "Incorrect OTP. Please try again."})
 
-    # Clear OTP session keys
-    for k in ["otp", "otp_email", "otp_expiry", "otp_purpose"]:
-        session.pop(k, None)
+    # OTP is valid — clear it
+    _otp_store.pop(email, None)
 
     if purpose == "login":
         user = User.query.filter_by(email=email).first()
@@ -700,6 +712,26 @@ def admin():
         total_admins        = User.query.filter_by(role="admin").count(),
         recent_users        = recent_users
     )
+
+@app.route("/admin/delete-user/<int:user_id>", methods=["POST"])
+def delete_user(user_id):
+    if session.get("role") != "admin":
+        return jsonify({"ok": False, "msg": "Unauthorized"}), 403
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({"ok": False, "msg": "User not found"}), 404
+    if user.role == "admin":
+        return jsonify({"ok": False, "msg": "Cannot delete admin account!"}), 400
+    # Delete all related records first
+    PatientDetail.query.filter_by(user_id=user_id).delete()
+    Prediction.query.filter_by(user_id=user_id).delete()
+    Appointment.query.filter_by(patient_id=user_id).delete()
+    Appointment.query.filter_by(doctor_id=user_id).delete()
+    Prescription.query.filter_by(patient_id=user_id).delete()
+    Prescription.query.filter_by(doctor_id=user_id).delete()
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"ok": True, "msg": f"{user.name} deleted successfully!"})
 
 @app.route("/api/health-score")
 def api_health_score():
