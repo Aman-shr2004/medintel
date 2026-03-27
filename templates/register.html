@@ -7,278 +7,85 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #e8f5f3;
-      overflow: hidden;
-    }
-
-    /* ── Background — same as login/index ── */
-    .bg {
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse at 20% 50%, rgba(13,148,136,.18) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 20%, rgba(15,118,110,.14) 0%, transparent 55%),
-        radial-gradient(ellipse at 60% 90%, rgba(20,184,166,.12) 0%, transparent 50%),
-        linear-gradient(135deg, #d4eeea 0%, #e8f5f3 40%, #cce8e3 100%);
-      z-index: 0;
-    }
-
-    .grid-pattern {
-      position: fixed; inset: 0;
-      background-image: radial-gradient(rgba(13,148,136,.08) 1px, transparent 1px);
-      background-size: 40px 40px;
-      z-index: 0;
-    }
-
-    .orb {
-      position: fixed; border-radius: 50%;
-      filter: blur(90px); opacity: .25;
-      z-index: 0; pointer-events: none;
-      animation: orbFloat ease-in-out infinite;
-    }
+    body { font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#e8f5f3; overflow:hidden; }
+    .bg { position:fixed; inset:0; background:radial-gradient(ellipse at 20% 50%,rgba(13,148,136,.18) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(15,118,110,.14) 0%,transparent 55%),linear-gradient(135deg,#d4eeea 0%,#e8f5f3 40%,#cce8e3 100%); z-index:0; }
+    .grid-pattern { position:fixed; inset:0; background-image:radial-gradient(rgba(13,148,136,.08) 1px,transparent 1px); background-size:40px 40px; z-index:0; }
+    .orb { position:fixed; border-radius:50%; filter:blur(90px); opacity:.25; z-index:0; pointer-events:none; animation:orbFloat ease-in-out infinite; }
     .orb1 { width:350px; height:350px; background:#5eead4; top:-80px; left:-80px; animation-duration:12s; }
     .orb2 { width:250px; height:250px; background:#14b8a6; bottom:-60px; right:-60px; animation-duration:15s; }
+    @keyframes orbFloat { 0%,100%{transform:translate(0,0);}50%{transform:translate(20px,-15px);} }
 
-    @keyframes orbFloat {
-      0%,100% { transform: translate(0,0); }
-      50%      { transform: translate(20px,-15px); }
-    }
+    .card { position:relative; z-index:10; width:100%; max-width:440px; margin:20px; background:rgba(255,255,255,.75); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.9); border-radius:24px; padding:40px 40px 36px; box-shadow:0 20px 60px rgba(13,148,136,.12),0 4px 16px rgba(0,0,0,.06); animation:cardIn .6s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes cardIn { from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);} }
 
-    /* ── Card — same as login ── */
-    .card {
-      position: relative; z-index: 10;
-      width: 100%; max-width: 440px;
-      margin: 20px;
-      background: rgba(255,255,255,.75);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255,255,255,.9);
-      border-radius: 24px;
-      padding: 40px 40px 36px;
-      box-shadow: 0 20px 60px rgba(13,148,136,.12), 0 4px 16px rgba(0,0,0,.06);
-      animation: cardIn .6s cubic-bezier(.22,1,.36,1) both;
-    }
+    .logo { display:flex; flex-direction:column; align-items:center; margin-bottom:22px; text-decoration:none; }
+    .logo-icon { width:58px; height:58px; border-radius:17px; background:linear-gradient(135deg,#14b8a6,#0d9488); display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:13px; box-shadow:0 6px 24px rgba(20,184,166,.4); }
+    .logo-name { font-family:'Fraunces',serif; font-size:26px; font-weight:900; color:#0f172a; letter-spacing:-.5px; }
+    .logo-sub { font-size:11px; color:#94a3b8; margin-top:4px; letter-spacing:1.5px; text-transform:uppercase; }
 
-    @keyframes cardIn {
-      from { opacity:0; transform: translateY(24px) scale(.97); }
-      to   { opacity:1; transform: translateY(0) scale(1); }
-    }
+    .form-title { font-size:18px; font-weight:700; color:#0f172a; margin-bottom:4px; }
+    .form-sub { font-size:13px; color:#64748b; margin-bottom:18px; }
 
-    /* ── Logo ── */
-    .logo {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 28px;
-      text-decoration: none;
-    }
+    .btn-google { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:13px 20px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fff; font-size:14px; font-weight:600; font-family:'DM Sans',sans-serif; color:#0f172a; cursor:pointer; text-decoration:none; transition:all .2s; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .btn-google:hover { border-color:#14b8a6; background:#f0fdfa; color:#0f766e; transform:translateY(-1px); }
 
-    .logo-icon {
-      width: 58px; height: 58px;
-      border-radius: 17px;
-      background: linear-gradient(135deg, #14b8a6, #0d9488);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px;
-      margin-bottom: 13px;
-      box-shadow: 0 6px 24px rgba(20,184,166,.4);
-    }
+    .divider { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+    .div-line { flex:1; height:1px; background:#e2e8f0; }
+    .div-text { font-size:12px; color:#94a3b8; font-weight:500; white-space:nowrap; }
 
-    .logo-name {
-      font-family: 'Fraunces', serif;
-      font-size: 26px;
-      font-weight: 900;
-      color: #0f172a;
-      letter-spacing: -0.5px;
-    }
+    .auth-tabs { display:flex; background:#f1f5f9; border-radius:12px; padding:4px; margin-bottom:18px; gap:4px; }
+    .tab-btn { flex:1; padding:9px 10px; border-radius:9px; border:none; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; color:#64748b; background:transparent; transition:all .18s; width:auto; }
+    .tab-btn.active { background:#fff; color:#0f766e; box-shadow:0 1px 4px rgba(0,0,0,.1); }
 
-    .logo-sub {
-      font-size: 11px;
-      color: #94a3b8;
-      margin-top: 4px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
+    .input-group { margin-bottom:12px; }
+    .input-label { font-size:12px; font-weight:600; color:#475569; text-transform:uppercase; letter-spacing:.6px; margin-bottom:7px; display:block; }
+    .input-wrap { display:flex; align-items:center; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; transition:border-color .2s,background .2s; overflow:hidden; }
+    .input-wrap:focus-within { border-color:#14b8a6; background:#f0fdfa; box-shadow:0 0 0 3px rgba(20,184,166,.12); }
+    .input-icon { padding:0 14px; font-size:15px; color:#94a3b8; flex-shrink:0; }
+    .input-wrap input, .input-wrap select { flex:1; padding:12px 14px 12px 0; background:transparent; border:none; font-size:14px; font-family:'DM Sans',sans-serif; color:#0f172a; outline:none; margin:0; width:100%; }
+    .input-wrap input::placeholder { color:#94a3b8; }
+    .input-wrap select { cursor:pointer; }
 
-    /* ── Form heading ── */
-    .form-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 4px;
-    }
+    .role-row { display:flex; gap:10px; margin-bottom:12px; }
+    .role-btn { flex:1; padding:11px 10px; border-radius:11px; border:1.5px solid #e2e8f0; background:#f8fafc; font-size:13px; font-weight:600; color:#64748b; cursor:pointer; text-align:center; transition:all .18s; width:auto; font-family:'DM Sans',sans-serif; }
+    .role-btn:hover, .role-btn.active { border-color:#14b8a6; background:#f0fdfa; color:#0f766e; }
 
-    .form-sub {
-      font-size: 13px;
-      color: #64748b;
-      margin-bottom: 22px;
-    }
+    .otp-boxes { display:flex; gap:8px; justify-content:center; margin:14px 0; }
+    .otp-box { width:46px; height:54px; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; font-size:22px; font-weight:700; font-family:'Fraunces',serif; color:#0f766e; text-align:center; outline:none; transition:border-color .2s,background .2s; }
+    .otp-box:focus { border-color:#14b8a6; background:#f0fdfa; box-shadow:0 0 0 3px rgba(20,184,166,.12); }
 
-    /* ── Input group ── */
-    .input-group { margin-bottom: 13px; }
+    .msg-box { border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .msg-error   { background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.25); color:#dc2626; }
+    .msg-success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
 
-    .input-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      margin-bottom: 7px;
-      display: block;
-    }
+    .btn-submit { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#14b8a6,#0d9488); color:#fff; font-size:15px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; margin-top:4px; transition:all .2s; box-shadow:0 4px 20px rgba(20,184,166,.35); }
+    .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(20,184,166,.5); }
+    .btn-submit:disabled { opacity:.6; cursor:not-allowed; transform:none; }
 
-    .input-wrap {
-      display: flex;
-      align-items: center;
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      transition: border-color .2s, background .2s;
-      overflow: hidden;
-    }
+    .back-btn { background:none; border:none; color:#94a3b8; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; padding:0 0 14px 0; width:auto; display:flex; align-items:center; gap:4px; }
+    .back-btn:hover { color:#0d9488; }
 
-    .input-wrap:focus-within {
-      border-color: #14b8a6;
-      background: #f0fdfa;
-      box-shadow: 0 0 0 3px rgba(20,184,166,.12);
-    }
+    .resend-row { text-align:center; margin-top:12px; font-size:12px; color:#94a3b8; }
+    .btn-resend { background:none; border:none; color:#0d9488; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; padding:0; text-decoration:underline; width:auto; }
+    .btn-resend:disabled { color:#94a3b8; cursor:not-allowed; text-decoration:none; }
 
-    .input-icon {
-      padding: 0 14px;
-      font-size: 15px;
-      color: #94a3b8;
-      flex-shrink: 0;
-    }
+    .bottom-link { text-align:center; margin-top:18px; font-size:13px; color:#64748b; }
+    .bottom-link a { color:#0d9488; font-weight:600; text-decoration:none; }
 
-    .input-wrap input,
-    .input-wrap select {
-      flex: 1;
-      padding: 12px 14px 12px 0;
-      background: transparent;
-      border: none;
-      font-size: 14px;
-      font-family: 'DM Sans', sans-serif;
-      color: #0f172a;
-      outline: none;
-      margin: 0;
-      width: 100%;
-    }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .otp-step { display:none; }
+    .otp-step.active { display:block; }
 
-    .input-wrap input::placeholder { color: #94a3b8; }
-    .input-wrap select { cursor: pointer; color: #0f172a; }
-    .input-wrap select option { color: #0f172a; background: #fff; }
-
-    /* ── Role toggle ── */
-    .role-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 13px;
-    }
-
-    .role-btn {
-      flex: 1;
-      padding: 11px 10px;
-      border-radius: 11px;
-      border: 1.5px solid #e2e8f0;
-      background: #f8fafc;
-      font-size: 13px;
-      font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
-      text-align: center;
-      transition: all .18s;
-      width: auto;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .role-btn:hover {
-      border-color: #14b8a6;
-      background: #f0fdfa;
-      color: #0f766e;
-    }
-
-    .role-btn.active {
-      border-color: #14b8a6;
-      background: #f0fdfa;
-      color: #0f766e;
-      box-shadow: 0 0 0 3px rgba(20,184,166,.1);
-    }
-
-    /* Hidden role input */
-    #role-input { display: none; }
-
-    /* ── Error box ── */
-    .error-box {
-      background: rgba(239,68,68,.08);
-      border: 1px solid rgba(239,68,68,.25);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: #dc2626;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* ── Submit button — same as login ── */
-    .btn-submit {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      background: linear-gradient(135deg, #14b8a6, #0d9488);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      margin-top: 4px;
-      transition: all .2s;
-      box-shadow: 0 4px 20px rgba(20,184,166,.35);
-      letter-spacing: .2px;
-    }
-
-    .btn-submit:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(20,184,166,.5);
-      background: linear-gradient(135deg, #2dd4bf, #14b8a6);
-    }
-
-    .btn-submit:active { transform: translateY(0); }
-
-    /* ── Bottom link ── */
-    .bottom-link {
-      text-align: center;
-      margin-top: 18px;
-      font-size: 13px;
-      color: #64748b;
-    }
-
-    .bottom-link a {
-      color: #0d9488;
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .bottom-link a:hover { color: #0f766e; }
+    .spinner { display:inline-block; width:15px; height:15px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+    @keyframes spin { to{transform:rotate(360deg);} }
   </style>
 </head>
 <body>
-
-<div class="bg"></div>
-<div class="grid-pattern"></div>
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
+<div class="bg"></div><div class="grid-pattern"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div>
 
 <div class="card">
-
-  <!-- Logo -->
   <a href="/" class="logo">
     <div class="logo-icon">🩺</div>
     <div class="logo-name">MedIntel</div>
@@ -286,87 +93,191 @@
   </a>
 
   <div class="form-title">Create your account ✨</div>
-  <div class="form-sub">Join MedIntel to start monitoring your health</div>
+  <div class="form-sub">Join MedIntel to monitor your health</div>
 
-  {% if error %}
-  <div class="error-box">⚠️ &nbsp;{{ error }}</div>
-  {% endif %}
-
-  <form method="POST">
-
-    <!-- Name -->
-    <div class="input-group">
-      <label class="input-label">Full Name</label>
-      <div class="input-wrap">
-        <div class="input-icon">🧑</div>
-        <input type="text" name="name" placeholder="e.g. Aman Sharma" required>
-      </div>
-    </div>
-
-    <!-- Email -->
-    <div class="input-group">
-      <label class="input-label">Email Address</label>
-      <div class="input-wrap">
-        <div class="input-icon">✉️</div>
-        <input type="email" name="email" placeholder="you@example.com" required>
-      </div>
-    </div>
-
-    <!-- Password -->
-    <div class="input-group">
-      <label class="input-label">Password</label>
-      <div class="input-wrap">
-        <div class="input-icon">🔒</div>
-        <input type="password" name="password" placeholder="Choose a strong password" required>
-      </div>
-    </div>
-
-    <!-- Role toggle -->
-    <div class="input-group">
-      <label class="input-label">Register As</label>
-      <div class="role-row">
-        <div class="role-btn active" id="btn-patient" onclick="selectRole('patient')">🧑 Patient</div>
-        <div class="role-btn"        id="btn-doctor"  onclick="selectRole('doctor')">👨‍⚕️ Doctor</div>
-      </div>
-      <input type="hidden" name="role" id="role-input" value="patient">
-    </div>
-
-    <!-- Specialization (only for doctors) -->
-    <div class="input-group" id="spec-group" style="display:none;">
-      <label class="input-label">Specialization</label>
-      <div class="input-wrap">
-        <div class="input-icon">🏥</div>
-        <select name="specialization" id="spec-select">
-          <option value="General Physician">🩺 General Physician</option>
-          <option value="Cardiologist">❤️ Cardiologist</option>
-          <option value="Endocrinologist">🩸 Endocrinologist</option>
-          <option value="Neurologist">🧠 Neurologist</option>
-          <option value="Orthopedist">🦴 Orthopedist</option>
-          <option value="Dermatologist">🧴 Dermatologist</option>
-          <option value="Pediatrician">👶 Pediatrician</option>
-          <option value="Psychiatrist">🧘 Psychiatrist</option>
-        </select>
-      </div>
-    </div>
-
-    <button type="submit" class="btn-submit">✨ Create Account</button>
-
-  </form>
-
-  <div class="bottom-link">
-    Already have an account? <a href="/login">Sign in →</a>
+  <!-- Tabs -->
+  <div class="auth-tabs">
+    <button class="tab-btn active" onclick="switchTab('password')">🔒 Set Password</button>
+    <button class="tab-btn" onclick="switchTab('otp')">📱 Verify with OTP</button>
   </div>
 
+  {% if error %}<div class="msg-box msg-error">⚠️ {{ error }}</div>{% endif %}
+
+  <!-- PASSWORD TAB -->
+  <div id="tab-password" class="tab-content active">
+    <form method="POST">
+      <div class="input-group">
+        <label class="input-label">Full Name</label>
+        <div class="input-wrap">
+          <div class="input-icon">🧑</div>
+          <input type="text" name="name" placeholder="e.g. Aman Sharma" required>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Email Address</label>
+        <div class="input-wrap">
+          <div class="input-icon">✉️</div>
+          <input type="email" name="email" placeholder="you@example.com" required>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Password</label>
+        <div class="input-wrap">
+          <div class="input-icon">🔒</div>
+          <input type="password" name="password" id="pw-reg-input" placeholder="Choose a strong password" required>
+          <div class="input-icon" id="toggle-reg-pw" onclick="toggleRegPw()" style="cursor:pointer;font-size:17px;">👁️</div>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Register As</label>
+        <div class="role-row">
+          <div class="role-btn active" id="pw-btn-patient" onclick="selectRole('patient','pw')">🧑 Patient</div>
+          <div class="role-btn" id="pw-btn-doctor" onclick="selectRole('doctor','pw')">👨‍⚕️ Doctor</div>
+        </div>
+        <input type="hidden" name="role" id="pw-role" value="patient">
+      </div>
+      <div class="input-group" id="pw-spec-group" style="display:none;">
+        <label class="input-label">Specialization</label>
+        <div class="input-wrap">
+          <div class="input-icon">🏥</div>
+          <select name="specialization">
+            <option>🩺 General Physician</option>
+            <option>❤️ Cardiologist</option>
+            <option>🩸 Endocrinologist</option>
+            <option>🧠 Neurologist</option>
+            <option>🦴 Orthopedist</option>
+            <option>🧴 Dermatologist</option>
+            <option>👶 Pediatrician</option>
+            <option>🧘 Psychiatrist</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn-submit">✨ Create Account</button>
+    </form>
+    <div class="divider" style="margin-top:16px;"><div class="div-line"></div><div class="div-text">or sign up with</div><div class="div-line"></div></div>
+    <a href="/auth/google" class="btn-google">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.9 29.3 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.2 3l5.7-5.7C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3.1 0 6 1.1 8.2 3l5.7-5.7C34.6 5.1 29.6 3 24 3 16.3 3 9.7 7.9 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.3-5l-6.6-5.4C29.7 36.5 27 37 24 37c-5.2 0-9.6-3.1-11.3-7.6l-6.5 5C9.5 40.9 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.5-2.5 4.6-4.6 6l6.6 5.4C41 35.8 44 30.4 44 24c0-1.3-.2-2.7-.4-4z"/></svg>
+      Continue with Google
+    </a>
+  </div>
+
+  <!-- OTP TAB -->
+  <div id="tab-otp" class="tab-content">
+
+    <!-- Step 1: Enter email -->
+    <div id="otp-step1" class="otp-step active">
+      <div class="input-group">
+        <label class="input-label">Your Gmail Address</label>
+        <div class="input-wrap">
+          <div class="input-icon">✉️</div>
+          <input type="email" id="reg-email" placeholder="you@gmail.com">
+        </div>
+      </div>
+      <div id="reg-msg1"></div>
+      <button class="btn-submit" id="reg-send-btn" onclick="sendRegOTP()">📨 Send Verification OTP</button>
+    </div>
+
+    <!-- Step 2: OTP verify -->
+    <div id="otp-step2" class="otp-step">
+      <button class="back-btn" onclick="regGoBack()">← Change email</button>
+      <p style="font-size:13px;color:#64748b;margin-bottom:2px;">Code sent to <strong id="reg-disp-email" style="color:#0f172a;"></strong></p>
+      <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Check your inbox and spam folder</p>
+      <div class="otp-boxes">
+        <input class="otp-box" maxlength="1" id="r1" oninput="rmv(this,'r2')" onkeydown="rbk(event,this,'')">
+        <input class="otp-box" maxlength="1" id="r2" oninput="rmv(this,'r3')" onkeydown="rbk(event,this,'r1')">
+        <input class="otp-box" maxlength="1" id="r3" oninput="rmv(this,'r4')" onkeydown="rbk(event,this,'r2')">
+        <input class="otp-box" maxlength="1" id="r4" oninput="rmv(this,'r5')" onkeydown="rbk(event,this,'r3')">
+        <input class="otp-box" maxlength="1" id="r5" oninput="rmv(this,'r6')" onkeydown="rbk(event,this,'r4')">
+        <input class="otp-box" maxlength="1" id="r6" oninput="rmv(this,'')"   onkeydown="rbk(event,this,'r5')">
+      </div>
+      <div id="reg-msg2"></div>
+      <button class="btn-submit" id="reg-verify-btn" onclick="verifyRegOTP()">✅ Verify Email</button>
+      <div class="resend-row">
+        <button class="btn-resend" id="reg-resend-btn" disabled onclick="sendRegOTP()">Resend OTP</button>
+        <span id="reg-timer-text"> (wait <span id="reg-countdown">60</span>s)</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-link">Already have an account? <a href="/login">Sign in →</a></div>
 </div>
 
 <script>
-function selectRole(role) {
-  document.getElementById('role-input').value = role;
-  document.getElementById('btn-patient').className = 'role-btn' + (role === 'patient' ? ' active' : '');
-  document.getElementById('btn-doctor').className  = 'role-btn' + (role === 'doctor'  ? ' active' : '');
-  document.getElementById('spec-group').style.display = role === 'doctor' ? 'block' : 'none';
+let regTimer = null;
+
+function toggleRegPw() {
+  const inp = document.getElementById('pw-reg-input');
+  const icon = document.getElementById('toggle-reg-pw');
+  if (inp.type === 'password') { inp.type = 'text'; icon.textContent = '🙈'; }
+  else { inp.type = 'password'; icon.textContent = '👁️'; }
+}
+
+function switchTab(t){
+  document.querySelectorAll('.auth-tabs .tab-btn').forEach((b,i)=> b.classList.toggle('active',(t==='password'&&i===0)||(t==='otp'&&i===1)));
+  document.getElementById('tab-password').classList.toggle('active',t==='password');
+  document.getElementById('tab-otp').classList.toggle('active',t==='otp');
+}
+
+function selectRole(role, prefix){
+  document.getElementById(prefix+'-role').value = role;
+  document.getElementById(prefix+'-btn-patient').classList.toggle('active', role==='patient');
+  document.getElementById(prefix+'-btn-doctor').classList.toggle('active', role==='doctor');
+  document.getElementById(prefix+'-spec-group').style.display = role==='doctor' ? 'block' : 'none';
+}
+
+function showMsg(id,html,type){document.getElementById(id).innerHTML=`<div class="msg-box msg-${type}">${html}</div>`;}
+function clearMsg(id){document.getElementById(id).innerHTML='';}
+
+function rmv(el,nxt){el.value=el.value.replace(/\D/g,'');if(el.value&&nxt)document.getElementById(nxt).focus();rautoVerify();}
+function rbk(e,el,prv){if(e.key==='Backspace'&&!el.value&&prv)document.getElementById(prv).focus();}
+function getRegCode(){return['r1','r2','r3','r4','r5','r6'].map(i=>document.getElementById(i).value).join('');}
+function rautoVerify(){if(getRegCode().length===6)verifyRegOTP();}
+
+function startRegTimer(){
+  clearInterval(regTimer);
+  let s=60;
+  const rb=document.getElementById('reg-resend-btn'),cd=document.getElementById('reg-countdown'),tt=document.getElementById('reg-timer-text');
+  rb.disabled=true;tt.style.display='';cd.textContent=s;
+  regTimer=setInterval(()=>{s--;cd.textContent=s;if(s<=0){clearInterval(regTimer);rb.disabled=false;tt.style.display='none';}},1000);
+}
+
+function regGoBack(){
+  document.getElementById('otp-step1').classList.add('active');
+  document.getElementById('otp-step2').classList.remove('active');
+  ['r1','r2','r3','r4','r5','r6'].forEach(i=>document.getElementById(i).value='');
+  clearMsg('reg-msg1');clearMsg('reg-msg2');clearInterval(regTimer);
+}
+
+async function sendRegOTP(){
+  const email=document.getElementById('reg-email').value.trim();
+  if(!email){showMsg('reg-msg1','⚠️ Please enter your email.','error');return;}
+  const btn=document.getElementById('reg-send-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Sending...';
+  const r=await fetch('/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,purpose:'register'})});
+  const d=await r.json();
+  btn.disabled=false;btn.innerHTML='📨 Send Verification OTP';
+  if(d.ok){
+    document.getElementById('reg-disp-email').textContent=email;
+    document.getElementById('otp-step1').classList.remove('active');
+    document.getElementById('otp-step2').classList.add('active');
+    document.getElementById('r1').focus();
+    showMsg('reg-msg2','✅ '+d.msg,'success');
+    startRegTimer();
+  } else {showMsg('reg-msg1','⚠️ '+d.msg,'error');}
+}
+
+async function verifyRegOTP(){
+  const code=getRegCode();
+  if(code.length<6){showMsg('reg-msg2','⚠️ Enter all 6 digits.','error');return;}
+  const btn=document.getElementById('reg-verify-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Verifying...';
+  const r=await fetch('/verify-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({otp:code})});
+  const d=await r.json();
+  btn.disabled=false;btn.innerHTML='✅ Verify Email';
+  if(d.ok){showMsg('reg-msg2','✅ Email verified! Redirecting...','success');setTimeout(()=>window.location.href=d.redirect,500);}
+  else{showMsg('reg-msg2','⚠️ '+d.msg,'error');['r1','r2','r3','r4','r5','r6'].forEach(i=>document.getElementById(i).value='');document.getElementById('r1').focus();}
 }
 </script>
-
 </body>
 </html>
