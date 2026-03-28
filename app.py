@@ -123,7 +123,6 @@ diabetes_model, diabetes_scaler  = diabetes_payload if isinstance(diabetes_paylo
 # ─── OTP Helpers ──────────────────────────────────────────────────────────────
 
 # In-memory OTP store: { email: { otp, expiry, purpose } }
-# This avoids Flask session persistence issues across requests.
 _otp_store = {}
 
 def generate_otp():
@@ -170,7 +169,7 @@ def send_otp_email(to_email, otp, purpose="login"):
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
             smtp.login(sender_email, sender_password)
             smtp.sendmail(sender_email, to_email, msg.as_string())
-        return True, False  # (sent_ok, is_dev_mode)
+        return True, False
     except Exception as e:
         print(f"Email send error: {e}")
         return False, False
@@ -196,22 +195,16 @@ def send_otp():
     otp    = generate_otp()
     expiry = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
 
-    # Store OTP in memory (not session) to avoid cookie/session persistence issues
-    _otp_store[email] = {
-        "otp":     otp,
-        "expiry":  expiry.isoformat(),
-        "purpose": purpose,
-    }
+    _otp_store[email] = {"otp": otp, "expiry": expiry.isoformat(), "purpose": purpose}
 
     ok, is_dev = send_otp_email(email, otp, purpose)
     if ok:
         resp = {"ok": True, "msg": f"OTP sent to {email}"}
-        # In dev mode (no mail configured), include OTP in response for testing
         if is_dev:
             resp["dev_otp"] = otp
             resp["msg"] = f"[DEV MODE] Mail not configured. OTP: {otp}"
         return jsonify(resp)
-    return jsonify({"ok": False, "msg": "Failed to send email. Please configure MAIL_USERNAME and MAIL_PASSWORD in your .env file."})
+    return jsonify({"ok": False, "msg": "Failed to send email. Please configure MAIL_USERNAME and MAIL_PASSWORD in .env"})
 
 @app.route("/verify-otp", methods=["POST"])
 def verify_otp():
@@ -219,9 +212,7 @@ def verify_otp():
     code  = (data.get("otp") or "").strip()
     email = (data.get("email") or "").strip().lower()
 
-    # Look up OTP from in-memory store
     record = _otp_store.get(email)
-
     if not record:
         return jsonify({"ok": False, "msg": "No OTP found for this email. Please request a new one."})
 
@@ -235,7 +226,6 @@ def verify_otp():
     if code != record["otp"]:
         return jsonify({"ok": False, "msg": "Incorrect OTP. Please try again."})
 
-    # OTP is valid — clear it
     _otp_store.pop(email, None)
 
     if purpose == "login":
@@ -259,25 +249,28 @@ def register_complete():
     email = session.get("verified_email")
     if not email:
         return redirect(url_for("register"))
+    google_name = session.get("google_name", "")
+    is_google   = bool(google_name)
     if request.method == "POST":
         role = request.form.get("role", "patient")
         if role not in ("patient", "doctor"):
             role = "patient"
         spec = request.form.get("specialization", "General Physician") if role == "doctor" else "General Physician"
-        user = User(
-            name=request.form["name"].strip(),
-            email=email, role=role, specialization=spec
-        )
-        user.set_password(request.form["password"])
+        name = request.form.get("name", "").strip() or google_name
+        user = User(name=name, email=email, role=role, specialization=spec)
+        raw_password = session.get("google_password") or request.form.get("password", "")
+        user.set_password(raw_password)
         db.session.add(user)
         db.session.commit()
         session.pop("verified_email", None)
+        session.pop("google_name", None)
+        session.pop("google_password", None)
         session["user_id"] = user.id
         session["role"]    = user.role
         session["name"]    = user.name.title()
         session["email"]   = user.email
         return redirect(url_for("dashboard"))
-    return render_template("register_complete.html", email=email)
+    return render_template("register_complete.html", email=email, google_name=google_name, is_google=is_google)
 
 # ─── Auth Routes ──────────────────────────────────────────────────────────────
 
@@ -287,25 +280,8 @@ def index():
         return redirect(url_for("dashboard"))
     return render_template("index.html")
 
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/register", methods=["GET"])
 def register():
-    if request.method == "POST":
-        email    = request.form["email"].strip().lower()
-        existing = User.query.filter_by(email=email).first()
-        if existing:
-            return render_template("register.html", error="Email already registered.")
-        role = request.form.get("role", "patient")
-        if role not in ("patient", "doctor"):
-            role = "patient"
-        spec = request.form.get("specialization", "General Physician") if role == "doctor" else "General Physician"
-        user = User(
-            name=request.form["name"].strip(),
-            email=email, role=role, specialization=spec
-        )
-        user.set_password(request.form["password"])
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for("login"))
     return render_template("register.html")
 
 @app.route("/login", methods=["GET", "POST"])
@@ -337,19 +313,19 @@ def google_callback():
         email    = userinfo["email"].lower()
         name     = userinfo.get("name", email.split("@")[0])
         user = User.query.filter_by(email=email).first()
-        if not user:
-            user = User(
-                name=name, email=email,
-                role="patient", specialization="General Physician"
-            )
-            user.set_password(os.urandom(24).hex())
-            db.session.add(user)
-            db.session.commit()
-        session["user_id"] = user.id
-        session["role"]    = user.role
-        session["name"]    = user.name.title()
-        session["email"]   = user.email
-        return redirect(url_for("dashboard"))
+        if user:
+            # Existing user — log straight in
+            session["user_id"] = user.id
+            session["role"]    = user.role
+            session["name"]    = user.name.title()
+            session["email"]   = user.email
+            return redirect(url_for("dashboard"))
+        else:
+            # New Google user — let them choose their role
+            session["verified_email"]  = email
+            session["google_name"]     = name
+            session["google_password"] = os.urandom(24).hex()
+            return redirect(url_for("register_complete"))
     except Exception as e:
         print(f"Google OAuth error: {e}")
         return render_template("login.html", error="Google login failed. Please try again.")

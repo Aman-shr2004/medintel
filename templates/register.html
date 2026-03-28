@@ -26,23 +26,6 @@
     .form-title { font-size:18px; font-weight:700; color:#0f172a; margin-bottom:4px; }
     .form-sub { font-size:13px; color:#64748b; margin-bottom:18px; }
 
-    /* Steps indicator */
-    .steps-row {
-      display:flex; align-items:center; justify-content:center;
-      gap:8px; margin-bottom:22px;
-    }
-    .step-dot {
-      width:32px; height:32px; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:13px; font-weight:700;
-      border:2px solid #e2e8f0; color:#94a3b8;
-      background:#f8fafc; transition:all .3s;
-    }
-    .step-dot.active { border-color:#14b8a6; background:#f0fdfa; color:#0f766e; }
-    .step-dot.done   { border-color:#14b8a6; background:#14b8a6; color:#fff; }
-    .step-line { flex:1; height:2px; background:#e2e8f0; border-radius:2px; transition:background .3s; }
-    .step-line.done { background:#14b8a6; }
-
     .btn-google { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:13px 20px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fff; font-size:14px; font-weight:600; font-family:'DM Sans',sans-serif; color:#0f172a; cursor:pointer; text-decoration:none; transition:all .2s; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
     .btn-google:hover { border-color:#14b8a6; background:#f0fdfa; color:#0f766e; transform:translateY(-1px); }
 
@@ -50,51 +33,15 @@
     .div-line { flex:1; height:1px; background:#e2e8f0; }
     .div-text { font-size:12px; color:#94a3b8; font-weight:500; white-space:nowrap; }
 
-    .input-group { margin-bottom:12px; }
-    .input-label { font-size:12px; font-weight:600; color:#475569; text-transform:uppercase; letter-spacing:.6px; margin-bottom:7px; display:block; }
-    .input-wrap { display:flex; align-items:center; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; transition:border-color .2s,background .2s; overflow:hidden; }
-    .input-wrap:focus-within { border-color:#14b8a6; background:#f0fdfa; box-shadow:0 0 0 3px rgba(20,184,166,.12); }
-    .input-icon { padding:0 14px; font-size:15px; color:#94a3b8; flex-shrink:0; }
-    .input-wrap input { flex:1; padding:12px 14px 12px 0; background:transparent; border:none; font-size:14px; font-family:'DM Sans',sans-serif; color:#0f172a; outline:none; margin:0; width:100%; }
-    .input-wrap input::placeholder { color:#94a3b8; }
-
-    .otp-boxes { display:flex; gap:8px; justify-content:center; margin:14px 0; }
-    .otp-box { width:46px; height:54px; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; font-size:22px; font-weight:700; font-family:'Fraunces',serif; color:#0f766e; text-align:center; outline:none; transition:border-color .2s,background .2s; }
-    .otp-box:focus { border-color:#14b8a6; background:#f0fdfa; box-shadow:0 0 0 3px rgba(20,184,166,.12); }
-
-    .msg-box { border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
-    .msg-error   { background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.25); color:#dc2626; }
-    .msg-success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
-
-    .btn-submit { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#14b8a6,#0d9488); color:#fff; font-size:15px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; margin-top:4px; transition:all .2s; box-shadow:0 4px 20px rgba(20,184,136,.35); }
-    .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(20,184,166,.5); }
-    .btn-submit:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-
-    .back-btn { background:none; border:none; color:#94a3b8; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; padding:0 0 14px 0; width:auto; display:flex; align-items:center; gap:4px; }
-    .back-btn:hover { color:#0d9488; }
-
-    .resend-row { text-align:center; margin-top:12px; font-size:12px; color:#94a3b8; }
-    .btn-resend { background:none; border:none; color:#0d9488; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; padding:0; text-decoration:underline; width:auto; }
-    .btn-resend:disabled { color:#94a3b8; cursor:not-allowed; text-decoration:none; }
-
     .bottom-link { text-align:center; margin-top:18px; font-size:13px; color:#64748b; }
     .bottom-link a { color:#0d9488; font-weight:600; text-decoration:none; }
-
-    .otp-step { display:none; }
-    .otp-step.active { display:block; }
-
-    .spinner { display:inline-block; width:15px; height:15px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
-    @keyframes spin { to{transform:rotate(360deg);} }
-
-    /* Validation hints */
-    .hint { font-size:11px; color:#94a3b8; margin-top:4px; margin-bottom:8px; }
-    .hint.valid   { color:#16a34a; }
-    .hint.invalid { color:#dc2626; }
   </style>
 </head>
 <body>
-<div class="bg"></div><div class="grid-pattern"></div>
-<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="bg"></div>
+<div class="grid-pattern"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
 
 <div class="card">
   <a href="/" class="logo">
@@ -104,16 +51,7 @@
   </a>
 
   <div class="form-title">Create your account ✨</div>
-  <div class="form-sub">Verify your real email to get started</div>
-
-  <!-- Step Indicator -->
-  <div class="steps-row" id="steps-row">
-    <div class="step-dot active" id="sd1">1</div>
-    <div class="step-line" id="sl1"></div>
-    <div class="step-dot" id="sd2">2</div>
-    <div class="step-line" id="sl2"></div>
-    <div class="step-dot" id="sd3">✓</div>
-  </div>
+  <div class="form-sub">Join MedIntel and start monitoring your health</div>
 
   <!-- Google Sign Up -->
   <a href="/auth/google" class="btn-google">
@@ -121,150 +59,11 @@
     Sign up with Google
   </a>
 
-  <div class="divider"><div class="div-line"></div><div class="div-text">or verify with email OTP</div><div class="div-line"></div></div>
 
-  {% if error %}<div class="msg-box msg-error">⚠️ {{ error }}</div>{% endif %}
-
-  <!-- STEP 1: Enter Email -->
-  <div id="otp-step1" class="otp-step active">
-    <div class="input-group">
-      <label class="input-label">Your Email Address</label>
-      <div class="input-wrap">
-        <div class="input-icon">✉️</div>
-        <input type="email" id="reg-email" placeholder="you@gmail.com" oninput="validateEmail(this)">
-      </div>
-      <div class="hint" id="email-hint">Enter a valid email to receive your OTP</div>
-    </div>
-    <div id="reg-msg1"></div>
-    <button class="btn-submit" id="reg-send-btn" onclick="sendRegOTP()">📨 Send Verification OTP</button>
-  </div>
-
-  <!-- STEP 2: OTP Verify -->
-  <div id="otp-step2" class="otp-step">
-    <button class="back-btn" onclick="regGoBack()">← Change email</button>
-    <p style="font-size:13px;color:#64748b;margin-bottom:2px;">Code sent to <strong id="reg-disp-email" style="color:#0f172a;"></strong></p>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Check your inbox and spam folder</p>
-    <div class="otp-boxes">
-      <input class="otp-box" maxlength="1" id="r1" oninput="rmv(this,'r2')" onkeydown="rbk(event,this,'')">
-      <input class="otp-box" maxlength="1" id="r2" oninput="rmv(this,'r3')" onkeydown="rbk(event,this,'r1')">
-      <input class="otp-box" maxlength="1" id="r3" oninput="rmv(this,'r4')" onkeydown="rbk(event,this,'r2')">
-      <input class="otp-box" maxlength="1" id="r4" oninput="rmv(this,'r5')" onkeydown="rbk(event,this,'r3')">
-      <input class="otp-box" maxlength="1" id="r5" oninput="rmv(this,'r6')" onkeydown="rbk(event,this,'r4')">
-      <input class="otp-box" maxlength="1" id="r6" oninput="rmv(this,'')"   onkeydown="rbk(event,this,'r5')">
-    </div>
-    <div id="reg-msg2"></div>
-    <button class="btn-submit" id="reg-verify-btn" onclick="verifyRegOTP()">✅ Verify Email</button>
-    <div class="resend-row">
-      <button class="btn-resend" id="reg-resend-btn" disabled onclick="sendRegOTP()">Resend OTP</button>
-      <span id="reg-timer-text"> (wait <span id="reg-countdown">60</span>s)</span>
-    </div>
-  </div>
 
   <div class="bottom-link">Already have an account? <a href="/login">Sign in →</a></div>
 </div>
 
-<script>
-let regTimer = null;
-
-// ── Step indicator ──
-function setStep(n) {
-  // dots
-  ['sd1','sd2','sd3'].forEach((id,i) => {
-    const d = document.getElementById(id);
-    d.classList.remove('active','done');
-    if (i + 1 < n) d.classList.add('done');
-    else if (i + 1 === n) d.classList.add('active');
-  });
-  // lines
-  ['sl1','sl2'].forEach((id,i) => {
-    document.getElementById(id).classList.toggle('done', i + 1 < n);
-  });
-}
-
-// ── Email validation ──
-function validateEmail(el) {
-  const hint = document.getElementById('email-hint');
-  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value.trim());
-  hint.textContent = valid ? '✅ Looks good!' : '⚠️ Enter a valid email address';
-  hint.className = 'hint ' + (valid ? 'valid' : (el.value ? 'invalid' : ''));
-}
-
-function showMsg(id,html,type){document.getElementById(id).innerHTML=`<div class="msg-box msg-${type}">${html}</div>`;}
-function clearMsg(id){document.getElementById(id).innerHTML='';}
-
-function rmv(el,nxt){el.value=el.value.replace(/\D/g,'');if(el.value&&nxt)document.getElementById(nxt).focus();rautoVerify();}
-function rbk(e,el,prv){if(e.key==='Backspace'&&!el.value&&prv)document.getElementById(prv).focus();}
-function getRegCode(){return['r1','r2','r3','r4','r5','r6'].map(i=>document.getElementById(i).value).join('');}
-function rautoVerify(){if(getRegCode().length===6)verifyRegOTP();}
-
-function startRegTimer(){
-  clearInterval(regTimer);
-  let s=60;
-  const rb=document.getElementById('reg-resend-btn'),cd=document.getElementById('reg-countdown'),tt=document.getElementById('reg-timer-text');
-  rb.disabled=true;tt.style.display='';cd.textContent=s;
-  regTimer=setInterval(()=>{s--;cd.textContent=s;if(s<=0){clearInterval(regTimer);rb.disabled=false;tt.style.display='none';}},1000);
-}
-
-function regGoBack(){
-  document.getElementById('otp-step1').classList.add('active');
-  document.getElementById('otp-step2').classList.remove('active');
-  ['r1','r2','r3','r4','r5','r6'].forEach(i=>document.getElementById(i).value='');
-  clearMsg('reg-msg1');clearMsg('reg-msg2');clearInterval(regTimer);
-  setStep(1);
-}
-
-async function sendRegOTP(){
-  const email = document.getElementById('reg-email').value.trim();
-  if(!email){ showMsg('reg-msg1','⚠️ Please enter your email.','error'); return; }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showMsg('reg-msg1','⚠️ Please enter a valid email address.','error'); return; }
-
-  const btn = document.getElementById('reg-send-btn');
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Sending...';
-  const r = await fetch('/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,purpose:'register'})});
-  const d = await r.json();
-  btn.disabled=false; btn.innerHTML='📨 Send Verification OTP';
-
-  if(d.ok){
-    document.getElementById('reg-disp-email').textContent = email;
-    document.getElementById('otp-step1').classList.remove('active');
-    document.getElementById('otp-step2').classList.add('active');
-    document.getElementById('r1').focus();
-    // In dev mode, show the OTP directly on screen
-    if(d.dev_otp){
-      showMsg('reg-msg2','🛠️ <strong>Dev Mode:</strong> Mail not configured. Your OTP is: <strong style="font-size:20px;letter-spacing:4px;">'+d.dev_otp+'</strong>','success');
-    } else {
-      showMsg('reg-msg2','✅ '+d.msg,'success');
-    }
-    startRegTimer();
-    setStep(2);
-  } else {
-    showMsg('reg-msg1','⚠️ '+d.msg,'error');
-  }
-}
-
-async function verifyRegOTP(){
-  const code = getRegCode();
-  if(code.length<6){ showMsg('reg-msg2','⚠️ Enter all 6 digits.','error'); return; }
-  const email = document.getElementById('reg-email').value.trim();
-  const btn = document.getElementById('reg-verify-btn');
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Verifying...';
-  // Send email along with OTP so backend can look it up without relying on session
-  const r = await fetch('/verify-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({otp:code,email:email})});
-  const d = await r.json();
-  btn.disabled=false; btn.innerHTML='✅ Verify Email';
-  if(d.ok){
-    setStep(3);
-    showMsg('reg-msg2','✅ Email verified! Redirecting...','success');
-    setTimeout(()=>window.location.href=d.redirect, 800);
-  } else {
-    showMsg('reg-msg2','⚠️ '+d.msg,'error');
-    ['r1','r2','r3','r4','r5','r6'].forEach(i=>document.getElementById(i).value='');
-    document.getElementById('r1').focus();
-  }
-}
-
-// Init
-setStep(1);
-</script>
+<script></script>
 </body>
 </html>

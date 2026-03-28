@@ -32,10 +32,9 @@
     .input-wrap:focus-within { border-color:#14b8a6; background:#f0fdfa; box-shadow:0 0 0 3px rgba(20,184,166,.12); }
     .input-icon { padding:0 14px; font-size:15px; color:#94a3b8; flex-shrink:0; }
     .input-wrap input, .input-wrap select { flex:1; padding:12px 14px 12px 0; background:transparent; border:none; font-size:14px; font-family:'DM Sans',sans-serif; color:#0f172a; outline:none; margin:0; width:100%; }
-    .input-wrap input::placeholder { color:#94a3b8; }
 
     .role-row { display:flex; gap:10px; margin-bottom:12px; }
-    .role-btn { flex:1; padding:11px 10px; border-radius:11px; border:1.5px solid #e2e8f0; background:#f8fafc; font-size:13px; font-weight:600; color:#64748b; cursor:pointer; text-align:center; transition:all .18s; width:auto; font-family:'DM Sans',sans-serif; }
+    .role-btn { flex:1; padding:11px 10px; border-radius:11px; border:1.5px solid #e2e8f0; background:#f8fafc; font-size:13px; font-weight:600; color:#64748b; cursor:pointer; text-align:center; transition:all .18s; font-family:'DM Sans',sans-serif; }
     .role-btn.active { border-color:#14b8a6; background:#f0fdfa; color:#0f766e; }
 
     .btn-submit { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#14b8a6,#0d9488); color:#fff; font-size:15px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; margin-top:6px; transition:all .2s; box-shadow:0 4px 20px rgba(20,184,166,.35); }
@@ -44,7 +43,8 @@
 </head>
 <body>
 <div class="bg"></div>
-<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
 
 <div class="card">
   <a href="/" class="logo">
@@ -52,25 +52,26 @@
     <div class="logo-name">MedIntel</div>
   </a>
 
-  <div class="verified-badge">✅ Email verified: <span style="color:#0f766e;">{{ email }}</span></div>
+  <div class="verified-badge">
+    <svg width="16" height="16" viewBox="0 0 48 48" style="flex-shrink:0">
+      <path fill="#34d399" d="M43.6 20H24v8h11.3C33.7 33.9 29.3 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.2 3l5.7-5.7C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.4-4z"/>
+    </svg>
+    Google verified: <span style="color:#0f766e;">{{ email }}</span>
+  </div>
 
   <div class="form-title">Almost done! 🎉</div>
-  <div class="form-sub">Set up your profile to complete registration</div>
+  <div class="form-sub">Just pick your role to finish setup</div>
 
   <form method="POST">
+    <!-- Name prefilled from Google, readonly -->
+    <input type="hidden" name="name" value="{{ google_name }}">
+
     <div class="input-group">
       <label class="input-label">Full Name</label>
       <div class="input-wrap">
         <div class="input-icon">🧑</div>
-        <input type="text" name="name" placeholder="e.g. Aman Sharma" required>
-      </div>
-    </div>
-
-    <div class="input-group">
-      <label class="input-label">Password</label>
-      <div class="input-wrap">
-        <div class="input-icon">🔒</div>
-        <input type="password" name="password" placeholder="Choose a strong password" required>
+        <input type="text" value="{{ google_name }}" readonly
+          style="opacity:.7; background:#f0fdfa; cursor:default;">
       </div>
     </div>
 
