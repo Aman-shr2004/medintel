@@ -42,11 +42,11 @@ with app.app_context():
         if not admin:
             admin = User(
                 name="Admin",
-                email="admin@medintel.com",
+                email="admin_123@medintel.com",
                 role="admin",
                 specialization="General Physician"
             )
-            admin.set_password("admin123")
+            admin.set_password("admin2004")
             db.session.add(admin)
             db.session.commit()
     except:
