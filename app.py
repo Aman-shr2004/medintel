@@ -42,7 +42,7 @@ with app.app_context():
         if not admin:
             admin = User(
                 name="Admin",
-                email="admin_123@medintel.com",
+                email="admin@medintel.com",
                 role="admin",
                 specialization="General Physician"
             )
