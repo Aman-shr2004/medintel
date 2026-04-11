@@ -14,96 +14,62 @@
     .orb1 { width:350px; height:350px; background:#5eead4; top:-80px; left:-80px; animation-duration:12s; }
     .orb2 { width:250px; height:250px; background:#14b8a6; bottom:-60px; right:-60px; animation-duration:15s; }
     @keyframes orbFloat { 0%,100%{transform:translate(0,0);}50%{transform:translate(20px,-15px);} }
+
     .card { position:relative; z-index:10; width:100%; max-width:430px; margin:20px; background:rgba(255,255,255,.75); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.9); border-radius:24px; padding:44px 40px 40px; box-shadow:0 20px 60px rgba(13,148,136,.12),0 4px 16px rgba(0,0,0,.06); animation:cardIn .6s cubic-bezier(.22,1,.36,1) both; }
     @keyframes cardIn { from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);} }
+
     .logo { display:flex; flex-direction:column; align-items:center; margin-bottom:26px; text-decoration:none; }
     .logo-icon { width:60px; height:60px; border-radius:18px; background:linear-gradient(135deg,#14b8a6,#0d9488); display:flex; align-items:center; justify-content:center; font-size:30px; margin-bottom:14px; box-shadow:0 6px 24px rgba(20,184,166,.45); }
     .logo-name { font-family:'Fraunces',serif; font-size:28px; font-weight:900; color:#0f172a; letter-spacing:-.5px; }
     .logo-sub { font-size:12px; color:#94a3b8; margin-top:4px; letter-spacing:1.5px; text-transform:uppercase; }
-    .form-title { font-size:18px; font-weight:700; color:#0f172a; margin-bottom:4px; }
-    .form-sub { font-size:13px; color:#64748b; margin-bottom:20px; }
-    .btn-google { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:13px 20px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fff; font-size:14px; font-weight:600; font-family:'DM Sans',sans-serif; color:#0f172a; cursor:pointer; text-decoration:none; transition:all .2s; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
-    .btn-google:hover { border-color:#14b8a6; background:#f0fdfa; color:#0f766e; transform:translateY(-1px); }
-    .divider { display:flex; align-items:center; gap:12px; margin:14px 0; }
-    .div-line { flex:1; height:1px; background:#e2e8f0; }
-    .div-text { font-size:12px; color:#94a3b8; font-weight:500; white-space:nowrap; }
-    .input-group { margin-bottom:13px; }
-    .input-label { font-size:12px; font-weight:600; color:#475569; text-transform:uppercase; letter-spacing:.6px; margin-bottom:7px; display:block; }
-    .input-wrap { display:flex; align-items:center; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; transition:border-color .2s,background .2s; overflow:hidden; }
-    .input-wrap:focus-within { border-color:#14b8a6; background:#f0fdfa; box-shadow:0 0 0 3px rgba(20,184,166,.12); }
-    .input-icon { padding:0 14px; font-size:16px; color:#94a3b8; flex-shrink:0; }
-    .input-wrap input { flex:1; padding:13px 14px 13px 0; background:transparent; border:none; font-size:14px; font-family:'DM Sans',sans-serif; color:#0f172a; outline:none; margin:0; width:100%; }
-    .input-wrap input::placeholder { color:#94a3b8; }
-    .msg-box { border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+
+    .form-title { font-size:18px; font-weight:700; color:#0f172a; margin-bottom:4px; text-align:center; }
+    .form-sub { font-size:13px; color:#64748b; margin-bottom:24px; text-align:center; }
+
+    .btn-google { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:14px 20px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fff; font-size:15px; font-weight:600; font-family:'DM Sans',sans-serif; color:#0f172a; cursor:pointer; text-decoration:none; transition:all .2s; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .btn-google:hover { border-color:#14b8a6; background:#f0fdfa; color:#0f766e; transform:translateY(-2px); box-shadow:0 6px 20px rgba(13,148,136,.15); }
+
+    .msg-box { border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
     .msg-error { background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.25); color:#dc2626; }
-    .btn-submit { width:100%; padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,#475569,#334155); color:#fff; font-size:15px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; margin-top:4px; transition:all .2s; box-shadow:0 4px 20px rgba(71,85,105,.3); }
-    .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(71,85,105,.45); }
-    .bottom-link { text-align:center; margin-top:20px; font-size:13px; color:#64748b; }
+
+    .bottom-note { text-align:center; margin-top:20px; font-size:12px; color:#94a3b8; }
+
+    .bottom-link { text-align:center; margin-top:10px; font-size:13px; color:#64748b; }
     .bottom-link a { color:#0d9488; font-weight:600; text-decoration:none; }
-    .admin-toggle { text-align:center; margin-top:12px; }
-    .admin-toggle span { font-size:11px; color:#cbd5e1; cursor:pointer; letter-spacing:.5px; user-select:none; transition:color .2s; }
-    .admin-toggle span:hover { color:#94a3b8; }
   </style>
 </head>
 <body>
-<div class="bg"></div><div class="grid-pattern"></div>
-<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="bg"></div>
+<div class="grid-pattern"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
 <div class="card">
   <a href="/" class="logo">
     <div class="logo-icon">🩺</div>
     <div class="logo-name">MedIntel</div>
     <div class="logo-sub">Health Monitor</div>
   </a>
+
   <div class="form-title">Welcome back 👋</div>
   <div class="form-sub">Sign in to your MedIntel account</div>
 
+  {% if error %}
+  <div class="msg-box msg-error">⚠️ {{ error }}</div>
+  {% endif %}
+
   <a href="/auth/google" class="btn-google">
-    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.9 29.3 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.2 3l5.7-5.7C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3.1 0 6 1.1 8.2 3l5.7-5.7C34.6 5.1 29.6 3 24 3 16.3 3 9.7 7.9 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.3-5l-6.6-5.4C29.7 36.5 27 37 24 37c-5.2 0-9.6-3.1-11.3-7.6l-6.5 5C9.5 40.9 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.5-2.5 4.6-4.6 6l6.6 5.4C41 35.8 44 30.4 44 24c0-1.3-.2-2.7-.4-4z"/></svg>
+    <svg width="20" height="20" viewBox="0 0 48 48">
+      <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.9 29.3 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.2 3l5.7-5.7C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.4-4z"/>
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3.1 0 6 1.1 8.2 3l5.7-5.7C34.6 5.1 29.6 3 24 3 16.3 3 9.7 7.9 6.3 14.7z"/>
+      <path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.3-5l-6.6-5.4C29.7 36.5 27 37 24 37c-5.2 0-9.6-3.1-11.3-7.6l-6.5 5C9.5 40.9 16.3 45 24 45z"/>
+      <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.5-2.5 4.6-4.6 6l6.6 5.4C41 35.8 44 30.4 44 24c0-1.3-.2-2.7-.4-4z"/>
+    </svg>
     Continue with Google
   </a>
 
-  {% if error %}<div class="msg-box msg-error">⚠️ {{ error }}</div>{% endif %}
-
-  <!-- Hidden Admin Login Panel -->
-  <div id="admin-panel" style="display:none;">
-    <div class="divider"><div class="div-line"></div><div class="div-text">⚙️ admin access</div><div class="div-line"></div></div>
-    <form method="POST">
-      <div class="input-group">
-        <label class="input-label">Email</label>
-        <div class="input-wrap">
-          <div class="input-icon">✉️</div>
-          <input type="email" name="email" placeholder="Enter your mail">
-        </div>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Password</label>
-        <div class="input-wrap">
-          <div class="input-icon">🔒</div>
-          <input type="password" name="password" id="login-pw" placeholder="Enter password">
-          <div class="input-icon" id="toggle-pw" onclick="togglePw()" style="cursor:pointer;font-size:17px;">👁️</div>
-        </div>
-      </div>
-      <button type="submit" class="btn-submit">🔐 Admin Sign In</button>
-    </form>
-  </div>
-
+  <div class="bottom-note">🔒 Secured with Google OAuth 2.0</div>
   <div class="bottom-link">Don't have an account? <a href="/register">Create one free →</a></div>
-  <div class="admin-toggle"><span onclick="toggleAdmin()" id="admin-link">⚙ admin</span></div>
 </div>
-<script>
-function toggleAdmin() {
-  const panel = document.getElementById('admin-panel');
-  const link  = document.getElementById('admin-link');
-  const open  = panel.style.display === 'none';
-  panel.style.display = open ? 'block' : 'none';
-  link.textContent = open ? '✕ close' : '⚙ admin';
-}
-function togglePw() {
-  const inp  = document.getElementById('login-pw');
-  const icon = document.getElementById('toggle-pw');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  icon.textContent = inp.type === 'password' ? '👁️' : '🙈';
-}
-</script>
 </body>
 </html>

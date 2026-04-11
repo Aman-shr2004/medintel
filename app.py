@@ -1,9 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from models import db, User, PatientDetail, Prediction, Appointment, Prescription
 from health_score import calculate_health_score
-import pickle, os, datetime, random, string, smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import pickle, os, datetime
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -38,11 +36,24 @@ with app.app_context():
     db.create_all()
     from models import User
     try:
-        admin = User.query.filter_by(role="admin").first()
-        if not admin:
+        ADMIN_EMAIL = "sharma.aman.don@gmail.com"
+
+        # Delete old admin@medintel.com if exists
+        old_admin = User.query.filter_by(email="admin@medintel.com").first()
+        if old_admin:
+            db.session.delete(old_admin)
+            db.session.commit()
+
+        # Force this email to be admin
+        existing = User.query.filter_by(email=ADMIN_EMAIL).first()
+        if existing:
+            existing.role = "admin"
+            existing.name = "Admin"
+            db.session.commit()
+        else:
             admin = User(
                 name="Admin",
-                email="admin@medintel.com",
+                email=ADMIN_EMAIL,
                 role="admin",
                 specialization="General Physician"
             )
@@ -120,158 +131,6 @@ heart_model                      = load_model("heart_model.pkl")
 diabetes_payload                 = load_model("diabetes_model.pkl")
 diabetes_model, diabetes_scaler  = diabetes_payload if isinstance(diabetes_payload, tuple) else (None, None)
 
-# ─── OTP Helpers ──────────────────────────────────────────────────────────────
-
-# In-memory OTP store: { email: { otp, expiry, purpose } }
-_otp_store = {}
-
-def generate_otp():
-    return "".join(random.choices(string.digits, k=6))
-
-def send_otp_email(to_email, otp, purpose="login"):
-    sender_email    = os.environ.get("MAIL_USERNAME")
-    sender_password = os.environ.get("MAIL_PASSWORD")
-
-    if not sender_email or not sender_password:
-        # Dev mode — print OTP to console so you can still test
-        print(f"⚠️  MAIL not configured. OTP for {to_email}: {otp}")
-        return True, True  # (sent_ok, is_dev_mode)
-
-    action = "log in to" if purpose == "login" else "verify your email for"
-    html_body = f"""
-    <div style="font-family:'DM Sans',sans-serif;max-width:480px;margin:auto;padding:32px;
-                background:#f0fdfa;border-radius:16px;border:1px solid #99f6e4;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <div style="font-size:40px;">🩺</div>
-        <h2 style="font-family:Georgia,serif;color:#0f766e;margin:8px 0 4px;">MedIntel</h2>
-        <p style="color:#64748b;font-size:13px;margin:0;">Smart Health Monitor</p>
-      </div>
-      <h3 style="color:#0f172a;margin-bottom:8px;">Your One-Time Password</h3>
-      <p style="color:#64748b;font-size:14px;margin-bottom:20px;">
-        Use the code below to {action} MedIntel. It expires in <strong>10 minutes</strong>.
-      </p>
-      <div style="background:#fff;border:2px dashed #14b8a6;border-radius:12px;
-                  padding:20px;text-align:center;margin-bottom:20px;">
-        <span style="font-size:42px;font-weight:900;letter-spacing:14px;color:#0d9488;
-                     font-family:Georgia,serif;">{otp}</span>
-      </div>
-      <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">
-        If you did not request this, please ignore this email.
-      </p>
-    </div>
-    """
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = "MedIntel – Your OTP Code"
-    msg["From"]    = sender_email
-    msg["To"]      = to_email
-    msg.attach(MIMEText(html_body, "html"))
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(sender_email, sender_password)
-            smtp.sendmail(sender_email, to_email, msg.as_string())
-        return True, False
-    except Exception as e:
-        print(f"Email send error: {e}")
-        return False, False
-
-# ─── OTP Routes ───────────────────────────────────────────────────────────────
-
-@app.route("/send-otp", methods=["POST"])
-def send_otp():
-    data    = request.get_json()
-    email   = (data.get("email") or "").strip().lower()
-    purpose = data.get("purpose", "login")   # "login" or "register"
-
-    if not email:
-        return jsonify({"ok": False, "msg": "Email is required."})
-
-    user = User.query.filter_by(email=email).first()
-
-    if purpose == "login" and not user:
-        return jsonify({"ok": False, "msg": "No account found with this email."})
-    if purpose == "register" and user:
-        return jsonify({"ok": False, "msg": "Email already registered. Please log in instead."})
-
-    otp    = generate_otp()
-    expiry = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
-
-    _otp_store[email] = {"otp": otp, "expiry": expiry.isoformat(), "purpose": purpose}
-
-    ok, is_dev = send_otp_email(email, otp, purpose)
-    if ok:
-        resp = {"ok": True, "msg": f"OTP sent to {email}"}
-        if is_dev:
-            resp["dev_otp"] = otp
-            resp["msg"] = f"[DEV MODE] Mail not configured. OTP: {otp}"
-        return jsonify(resp)
-    return jsonify({"ok": False, "msg": "Failed to send email. Please configure MAIL_USERNAME and MAIL_PASSWORD in .env"})
-
-@app.route("/verify-otp", methods=["POST"])
-def verify_otp():
-    data  = request.get_json()
-    code  = (data.get("otp") or "").strip()
-    email = (data.get("email") or "").strip().lower()
-
-    record = _otp_store.get(email)
-    if not record:
-        return jsonify({"ok": False, "msg": "No OTP found for this email. Please request a new one."})
-
-    expiry  = datetime.datetime.fromisoformat(record["expiry"])
-    purpose = record["purpose"]
-
-    if datetime.datetime.utcnow() > expiry:
-        _otp_store.pop(email, None)
-        return jsonify({"ok": False, "msg": "OTP expired. Please request a new one."})
-
-    if code != record["otp"]:
-        return jsonify({"ok": False, "msg": "Incorrect OTP. Please try again."})
-
-    _otp_store.pop(email, None)
-
-    if purpose == "login":
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            return jsonify({"ok": False, "msg": "User not found."})
-        session["user_id"] = user.id
-        session["role"]    = user.role
-        session["name"]    = user.name.title() if user.name else "User"
-        session["email"]   = user.email
-        return jsonify({"ok": True, "redirect": url_for("dashboard")})
-
-    if purpose == "register":
-        session["verified_email"] = email
-        return jsonify({"ok": True, "redirect": url_for("register_complete")})
-
-    return jsonify({"ok": False, "msg": "Unknown purpose."})
-
-@app.route("/register/complete", methods=["GET", "POST"])
-def register_complete():
-    email = session.get("verified_email")
-    if not email:
-        return redirect(url_for("register"))
-    google_name = session.get("google_name", "")
-    is_google   = bool(google_name)
-    if request.method == "POST":
-        role = request.form.get("role", "patient")
-        if role not in ("patient", "doctor"):
-            role = "patient"
-        spec = request.form.get("specialization", "General Physician") if role == "doctor" else "General Physician"
-        name = request.form.get("name", "").strip() or google_name
-        user = User(name=name, email=email, role=role, specialization=spec)
-        raw_password = session.get("google_password") or request.form.get("password", "")
-        user.set_password(raw_password)
-        db.session.add(user)
-        db.session.commit()
-        session.pop("verified_email", None)
-        session.pop("google_name", None)
-        session.pop("google_password", None)
-        session["user_id"] = user.id
-        session["role"]    = user.role
-        session["name"]    = user.name.title()
-        session["email"]   = user.email
-        return redirect(url_for("dashboard"))
-    return render_template("register_complete.html", email=email, google_name=google_name, is_google=is_google)
-
 # ─── Auth Routes ──────────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -280,23 +139,17 @@ def index():
         return redirect(url_for("dashboard"))
     return render_template("index.html")
 
-@app.route("/register", methods=["GET"])
-def register():
-    return render_template("register.html")
-
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login")
 def login():
-    if request.method == "POST":
-        email = request.form["email"].strip().lower()
-        user  = User.query.filter_by(email=email).first()
-        if user and user.check_password(request.form["password"]):
-            session["user_id"] = user.id
-            session["role"]    = user.role
-            session["name"]    = user.name.title() if user.name else "User"
-            session["email"]   = user.email
-            return redirect(url_for("dashboard"))
-        return render_template("login.html", error="Invalid email or password.")
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
     return render_template("login.html")
+
+@app.route("/register")
+def register():
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
+    return render_template("register.html")
 
 # ─── Google OAuth ─────────────────────────────────────────────────────────────
 
@@ -314,14 +167,12 @@ def google_callback():
         name     = userinfo.get("name", email.split("@")[0])
         user = User.query.filter_by(email=email).first()
         if user:
-            # Existing user — log straight in
             session["user_id"] = user.id
             session["role"]    = user.role
             session["name"]    = user.name.title()
             session["email"]   = user.email
             return redirect(url_for("dashboard"))
         else:
-            # New Google user — let them choose their role
             session["verified_email"]  = email
             session["google_name"]     = name
             session["google_password"] = os.urandom(24).hex()
@@ -329,6 +180,32 @@ def google_callback():
     except Exception as e:
         print(f"Google OAuth error: {e}")
         return render_template("login.html", error="Google login failed. Please try again.")
+
+@app.route("/register/complete", methods=["GET", "POST"])
+def register_complete():
+    email = session.get("verified_email")
+    if not email:
+        return redirect(url_for("login"))
+    google_name = session.get("google_name", "")
+    if request.method == "POST":
+        role = request.form.get("role", "patient")
+        if role not in ("patient", "doctor"):
+            role = "patient"
+        spec = request.form.get("specialization", "General Physician") if role == "doctor" else "General Physician"
+        name = request.form.get("name", "").strip() or google_name
+        user = User(name=name, email=email, role=role, specialization=spec)
+        user.set_password(session.get("google_password", os.urandom(24).hex()))
+        db.session.add(user)
+        db.session.commit()
+        session.pop("verified_email", None)
+        session.pop("google_name", None)
+        session.pop("google_password", None)
+        session["user_id"] = user.id
+        session["role"]    = user.role
+        session["name"]    = user.name.title()
+        session["email"]   = user.email
+        return redirect(url_for("dashboard"))
+    return render_template("register_complete.html", email=email, google_name=google_name)
 
 @app.route("/logout")
 def logout():
@@ -355,7 +232,7 @@ def dashboard():
         patient_data = []
         for p in patients:
             det   = PatientDetail.query.filter_by(user_id=p.id).first()
-            score = calculate_health_score(det) if det else None
+            score = calculate_health_score(det) if det else 0
             patient_data.append({"user": p, "details": det, "score": score})
         return render_template("doctor_dashboard.html",
             user=user, patient_data=patient_data, appointments=appointments,
@@ -567,18 +444,53 @@ def appointment():
         if not suggested_doctor_id and details.smoking == "yes":
             suggested_doctor_id = doctors[0].id
             suggestion_reason = "Smoking significantly increases health risks."
+
     if request.method == "POST":
         f = request.form
+        error = None
         try:
-            appt = Appointment(
-                patient_id=session["user_id"], doctor_id=int(f["doctor_id"]),
-                date=f["date"], time=f["time"], status="Pending"
-            )
-            db.session.add(appt)
-            db.session.commit()
+            appt_date = f["date"]
+            appt_time = f["time"]
+            doctor_id = int(f["doctor_id"])
+
+            # 1. Past date/time validation
+            now = datetime.datetime.now()
+            appt_dt = datetime.datetime.strptime(f"{appt_date} {appt_time}", "%Y-%m-%d %H:%M")
+            if appt_dt <= now:
+                error = "Cannot book an appointment in the past. Please select a future date and time."
+
+            # 2. Duplicate booking check
+            if not error:
+                duplicate = Appointment.query.filter_by(
+                    patient_id=session["user_id"],
+                    doctor_id=doctor_id,
+                    date=appt_date,
+                    time=appt_time
+                ).filter(Appointment.status != "Cancelled").first()
+                if duplicate:
+                    error = "You already have an appointment with this doctor at the same date and time."
+
+            if not error:
+                appt = Appointment(
+                    patient_id=session["user_id"], doctor_id=doctor_id,
+                    date=appt_date, time=appt_time, status="Pending"
+                )
+                db.session.add(appt)
+                db.session.commit()
+
         except (ValueError, KeyError):
-            pass
+            error = "Invalid date or time. Please try again."
+
+        if error:
+            appointments = Appointment.query.filter_by(patient_id=session["user_id"]).all()
+            appt_data = [{"appt": a, "doctor": db.session.get(User, a.doctor_id)} for a in appointments]
+            return render_template("appointment.html",
+                user=user, details=details, doctors=doctors, appt_data=appt_data,
+                suggested_doctor_id=suggested_doctor_id, suggestion_reason=suggestion_reason,
+                error=error
+            )
         return redirect(url_for("appointment"))
+
     appointments = Appointment.query.filter_by(patient_id=session["user_id"]).all()
     appt_data = [{"appt": a, "doctor": db.session.get(User, a.doctor_id)} for a in appointments]
     return render_template("appointment.html",
@@ -590,7 +502,9 @@ def appointment():
 def cancel_appointment(appt_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
-    appt = Appointment.query.get_or_404(appt_id)
+    appt = db.session.get(Appointment, appt_id)
+    if not appt:
+        return redirect(url_for("appointment"))
     if appt.patient_id == session["user_id"] and appt.status == "Pending":
         appt.status = "Cancelled"
         db.session.commit()
@@ -614,7 +528,9 @@ def my_prescriptions():
 def doctor_patient(patient_id):
     if "user_id" not in session or session.get("role") != "doctor":
         return redirect(url_for("login"))
-    patient       = User.query.get_or_404(patient_id)
+    patient = db.session.get(User, patient_id)
+    if not patient:
+        return redirect(url_for("dashboard"))
     details       = PatientDetail.query.filter_by(user_id=patient_id).first()
     predictions   = Prediction.query.filter_by(user_id=patient_id).order_by(Prediction.date.desc()).limit(5).all()
     prescriptions = Prescription.query.filter_by(patient_id=patient_id).order_by(Prescription.date.desc()).all()
@@ -628,8 +544,8 @@ def doctor_patient(patient_id):
 def doctor_appointment_action(appt_id, action):
     if "user_id" not in session or session.get("role") != "doctor":
         return redirect(url_for("login"))
-    appt = Appointment.query.get_or_404(appt_id)
-    if appt.doctor_id != session["user_id"]:
+    appt = db.session.get(Appointment, appt_id)
+    if not appt or appt.doctor_id != session["user_id"]:
         return redirect(url_for("dashboard"))
     if action == "confirm":
         appt.status = "Confirmed"
@@ -642,7 +558,9 @@ def doctor_appointment_action(appt_id, action):
 def write_prescription(patient_id):
     if "user_id" not in session or session.get("role") != "doctor":
         return redirect(url_for("login"))
-    patient = User.query.get_or_404(patient_id)
+    patient = db.session.get(User, patient_id)
+    if not patient:
+        return redirect(url_for("dashboard"))
     details = PatientDetail.query.filter_by(user_id=patient_id).first()
     if request.method == "POST":
         pres = Prescription(
@@ -659,6 +577,32 @@ def write_prescription(patient_id):
     return render_template("doctor_prescription.html",
         patient=patient, details=details, prescriptions=prescriptions
     )
+
+# ─── Prescription Delete ───────────────────────────────────────────────────────
+
+@app.route("/doctor/prescription/delete/<int:pres_id>", methods=["POST"])
+def doctor_delete_prescription(pres_id):
+    if "user_id" not in session or session.get("role") != "doctor":
+        return jsonify({"ok": False, "msg": "Unauthorized"}), 403
+    pres = db.session.get(Prescription, pres_id)
+    if not pres:
+        return jsonify({"ok": False, "msg": "Prescription not found"}), 404
+    if pres.doctor_id != session["user_id"]:
+        return jsonify({"ok": False, "msg": "You can only delete your own prescriptions"}), 403
+    db.session.delete(pres)
+    db.session.commit()
+    return jsonify({"ok": True, "msg": "Prescription deleted!"})
+
+@app.route("/admin/prescription/delete/<int:pres_id>", methods=["POST"])
+def admin_delete_prescription(pres_id):
+    if session.get("role") != "admin":
+        return jsonify({"ok": False, "msg": "Unauthorized"}), 403
+    pres = db.session.get(Prescription, pres_id)
+    if not pres:
+        return jsonify({"ok": False, "msg": "Prescription not found"}), 404
+    db.session.delete(pres)
+    db.session.commit()
+    return jsonify({"ok": True, "msg": "Prescription deleted!"})
 
 # ─── Emergency ────────────────────────────────────────────────────────────────
 
@@ -678,6 +622,16 @@ def admin():
     if session.get("role") != "admin":
         return redirect(url_for("dashboard"))
     recent_users = User.query.order_by(User.created.desc()).limit(8).all()
+    prescriptions = Prescription.query.order_by(Prescription.date.desc()).all()
+    all_prescriptions = []
+    for p in prescriptions:
+        patient = db.session.get(User, p.patient_id)
+        doctor  = db.session.get(User, p.doctor_id)
+        all_prescriptions.append({
+            "pres":         p,
+            "patient_name": patient.name.title() if patient else "Unknown",
+            "doctor_name":  doctor.name.title()  if doctor  else "Unknown",
+        })
     return render_template("admin.html",
         total_users         = User.query.count(),
         total_appointments  = Appointment.query.count(),
@@ -686,7 +640,8 @@ def admin():
         total_patients      = User.query.filter_by(role="patient").count(),
         total_doctors       = User.query.filter_by(role="doctor").count(),
         total_admins        = User.query.filter_by(role="admin").count(),
-        recent_users        = recent_users
+        recent_users        = recent_users,
+        all_prescriptions   = all_prescriptions
     )
 
 @app.route("/admin/delete-user/<int:user_id>", methods=["POST"])
@@ -698,7 +653,6 @@ def delete_user(user_id):
         return jsonify({"ok": False, "msg": "User not found"}), 404
     if user.role == "admin":
         return jsonify({"ok": False, "msg": "Cannot delete admin account!"}), 400
-    # Delete all related records first
     PatientDetail.query.filter_by(user_id=user_id).delete()
     Prediction.query.filter_by(user_id=user_id).delete()
     Appointment.query.filter_by(patient_id=user_id).delete()
@@ -708,6 +662,26 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     return jsonify({"ok": True, "msg": f"{user.name} deleted successfully!"})
+
+@app.route("/admin/delete-appointment/<int:appt_id>", methods=["POST"])
+def delete_appointment(appt_id):
+    if session.get("role") != "admin":
+        return jsonify({"ok": False, "msg": "Unauthorized"}), 403
+    appt = db.session.get(Appointment, appt_id)
+    if not appt:
+        return jsonify({"ok": False, "msg": "Appointment not found"}), 404
+    db.session.delete(appt)
+    db.session.commit()
+    return jsonify({"ok": True, "msg": "Appointment deleted!"})
+
+@app.route("/admin/clear-cancelled", methods=["POST"])
+def clear_cancelled():
+    if session.get("role") != "admin":
+        return jsonify({"ok": False, "msg": "Unauthorized"}), 403
+    count = Appointment.query.filter_by(status="Cancelled").count()
+    Appointment.query.filter_by(status="Cancelled").delete()
+    db.session.commit()
+    return jsonify({"ok": True, "msg": f"{count} cancelled appointments deleted!"})
 
 @app.route("/api/health-score")
 def api_health_score():
@@ -722,4 +696,4 @@ def api_health_score():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port = 5001)
+    app.run(debug=True, port=5001)

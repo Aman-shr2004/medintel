@@ -395,6 +395,59 @@
 
 </div>
 
+<!-- ── All Prescriptions ── -->
+<div class="sec-card" style="margin-bottom:24px;">
+  <div class="sec-hdr">
+    <div class="sec-icon" style="background:#fff7ed;">💊</div>
+    <div>
+      <div class="sec-title">All Prescriptions</div>
+      <div class="sec-sub">Manage prescriptions across all patients</div>
+    </div>
+  </div>
+  {% if all_prescriptions %}
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Medicines</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in all_prescriptions %}
+        <tr id="rx-{{ item.pres.id }}">
+          <td>
+            <div style="font-weight:600;">{{ item.patient_name }}</div>
+          </td>
+          <td>
+            <div style="color:var(--teal); font-weight:600;">Dr. {{ item.doctor_name }}</div>
+          </td>
+          <td>
+            <div style="font-size:12px; max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              {{ item.pres.medicines[:80] }}{% if item.pres.medicines|length > 80 %}…{% endif %}
+            </div>
+          </td>
+          <td style="white-space:nowrap; font-size:13px; color:var(--muted);">
+            {{ item.pres.date.strftime('%d %b %Y') }}
+          </td>
+          <td>
+            <button class="del-btn" onclick="adminDeletePrescription({{ item.pres.id }})" title="Delete">🗑️</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="padding:24px; text-align:center; color:var(--muted); font-size:13px;">
+    No prescriptions yet.
+  </div>
+  {% endif %}
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -404,6 +457,23 @@ function showToast(msg, type='success') {
   t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
   t.className = 'toast ' + type + ' show';
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function adminDeletePrescription(presId) {
+  if (!confirm("Delete this prescription? This cannot be undone.")) return;
+  try {
+    const res  = await fetch(`/admin/prescription/delete/${presId}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      const el = document.getElementById('rx-' + presId);
+      if (el) el.remove();
+      showToast(data.msg, 'success');
+    } else {
+      showToast(data.msg, 'error');
+    }
+  } catch(e) {
+    showToast('Something went wrong!', 'error');
+  }
 }
 
 async function deleteUser(userId, userName) {

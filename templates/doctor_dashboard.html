@@ -688,8 +688,8 @@
         </div>
       </div>
       <div style="padding:16px;">
-        {% set good_count = patient_data | selectattr('score', 'ge', 75) | list | length %}
-        {% set fair_count = patient_data | selectattr('score', 'ge', 50) | list | length - good_count %}
+        {% set good_count = patient_data | selectattr('score', 'defined') | selectattr('score', 'ne', None) | selectattr('score', 'ge', 75) | list | length %}
+        {% set fair_count = (patient_data | selectattr('score', 'defined') | selectattr('score', 'ne', None) | selectattr('score', 'ge', 50) | list | length) - good_count %}
         {% set poor_count = patient_data | length - good_count - fair_count %}
 
         <div style="display:flex; flex-direction:column; gap:10px;">

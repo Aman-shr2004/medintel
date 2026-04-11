@@ -267,17 +267,19 @@
 
     /* ── Account Popup ── */
     .account-popup {
-      position: absolute;
-      bottom: 90px;
+      position: fixed;
+      bottom: 80px;
       left: 12px;
-      right: 12px;
+      width: 236px;
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 8px 40px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.1);
-      overflow: hidden;
-      z-index: 300;
+      overflow: visible;
+      z-index: 400;
       display: none;
       animation: popupIn .2s cubic-bezier(.4,0,.2,1);
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
     }
 
     .account-popup.show { display: block; }
@@ -822,7 +824,6 @@
             </div>
             <div class="popup-acc-email">{{ session.get('email', session.get('role','patient') | capitalize) }}</div>
           </div>
-          <span class="popup-active-badge">● Active</span>
         </div>
 
         <!-- Saved accounts -->

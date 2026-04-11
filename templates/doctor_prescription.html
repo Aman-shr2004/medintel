@@ -316,8 +316,14 @@
       <div class="side-sec-body">
         {% if prescriptions %}
           {% for pres in prescriptions[:4] %}
-          <div class="past-rx-item">
-            <div class="past-rx-date">{{ pres.date.strftime('%d %b %Y') }}</div>
+          <div class="past-rx-item" id="pres-{{ pres.id }}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <div class="past-rx-date">{{ pres.date.strftime('%d %b %Y') }}</div>
+              <button onclick="deletePrescription({{ pres.id }})"
+                style="background:none; border:1px solid #fca5a5; border-radius:6px; padding:2px 7px;
+                       font-size:11px; color:#dc2626; cursor:pointer; width:auto; line-height:1.4;"
+                title="Delete">🗑️</button>
+            </div>
             <div class="past-rx-meds">
               {{ pres.medicines[:100] }}{% if pres.medicines|length > 100 %}…{% endif %}
             </div>
@@ -395,4 +401,28 @@ function updateCount(id, val) {
 }
 </script>
 
+
+<script>
+async function deletePrescription(presId) {
+  if (!confirm("Delete this prescription? This cannot be undone.")) return;
+  try {
+    const res  = await fetch(`/doctor/prescription/delete/${presId}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      const el = document.getElementById('pres-' + presId);
+      if (el) el.remove();
+      // Show quick toast
+      const t = document.createElement('div');
+      t.textContent = '✅ Prescription deleted!';
+      t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#166534;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.2);';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    } else {
+      alert('❌ ' + data.msg);
+    }
+  } catch(e) {
+    alert('Something went wrong!');
+  }
+}
+</script>
 {% endblock %}

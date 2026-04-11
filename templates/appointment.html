@@ -383,6 +383,12 @@
         <form method="POST" id="appt-form">
           <input type="hidden" name="doctor_id" id="selected-doctor-id" value="">
 
+          {% if error %}
+          <div style="background:#fef2f2; border:1px solid #fecaca; color:#dc2626; border-radius:10px; padding:12px 16px; font-size:13px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            ⚠️ {{ error }}
+          </div>
+          {% endif %}
+
           <!-- Selected Doctor Display -->
           <div id="selected-doc-display" class="no-doc-msg">
             👆 Please select a doctor from above
@@ -555,16 +561,47 @@ let selectedDoctorId   = null;
 let selectedDoctorName = '';
 let selectedTime       = '';
 
-// Set min date to today
+// Set min date to today and auto-select today
 const today = new Date().toISOString().split('T')[0];
-document.getElementById('appt-date').min = today;
+const dateInput = document.getElementById('appt-date');
+dateInput.min   = today;
+dateInput.value = today;
 
-// Pre-select suggested doctor if exists
-{% if suggested_doctor_id %}
-window.addEventListener('load', () => {
-  // Don't auto-select, just highlight
-});
-{% endif %}
+// Filter past time slots when date changes
+dateInput.addEventListener('change', filterTimeSlots);
+
+function filterTimeSlots() {
+  const selectedDate = dateInput.value;
+  const now = new Date();
+  const isToday = selectedDate === today;
+  const bufferMinutes = now.getHours() * 60 + now.getMinutes() + 30;
+
+  document.querySelectorAll('.time-slot').forEach(slot => {
+    const timeStr = slot.textContent.trim();
+    const [h, m]  = timeStr.split(':').map(Number);
+    const slotMinutes = h * 60 + m;
+
+    if (isToday && slotMinutes <= bufferMinutes) {
+      slot.disabled = true;
+      slot.style.opacity = '0.35';
+      slot.style.cursor  = 'not-allowed';
+      slot.style.textDecoration = 'line-through';
+      slot.classList.remove('selected');
+      if (selectedTime === timeStr) {
+        selectedTime = '';
+        document.getElementById('selected-time').value = '';
+      }
+    } else {
+      slot.disabled = false;
+      slot.style.opacity = '';
+      slot.style.cursor  = '';
+      slot.style.textDecoration = '';
+    }
+  });
+}
+
+// Run immediately on page load
+filterTimeSlots();
 
 function selectDoctor(id) {
   // Remove previous selection
