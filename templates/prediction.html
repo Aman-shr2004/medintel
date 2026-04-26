@@ -439,6 +439,7 @@
 </div>
 
 <form method="POST" id="pred-form">
+<input type="hidden" name="active_tab" id="active-tab-input" value="heart">
 
 <!-- ══════════════ HEART PANEL ══════════════ -->
 <div class="form-panel active" id="panel-heart">
@@ -460,7 +461,7 @@
             <span class="inp-tooltip">Normal: 30–65</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="age" id="inp-age" placeholder="e.g. 52" min="1" max="120" required
+            <input type="number" name="age" id="inp-age" placeholder="e.g. 52"
                    value="{{ request.form.age if request.form.age else (details.age if details else '') }}">
             <div class="inp-unit">years</div>
           </div>
@@ -499,7 +500,7 @@
             <span class="inp-tooltip">Normal: &lt;120</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="trestbps" placeholder="e.g. 130" min="80" max="220">
+            <input type="number" name="trestbps" placeholder="e.g. 130">
             <div class="inp-unit">mmHg</div>
           </div>
         </div>
@@ -511,7 +512,7 @@
             <span class="inp-tooltip">Normal: &lt;200</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="chol" placeholder="e.g. 240" min="100" max="600">
+            <input type="number" name="chol" placeholder="e.g. 240">
             <div class="inp-unit">mg/dL</div>
           </div>
         </div>
@@ -551,7 +552,7 @@
             <span class="inp-tooltip">Normal: 100–180</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="thalach" placeholder="e.g. 160" min="50" max="220">
+            <input type="number" name="thalach" placeholder="e.g. 160">
             <div class="inp-unit">bpm</div>
           </div>
         </div>
@@ -575,7 +576,7 @@
             <span class="inp-tooltip">Normal: 0–1</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="oldpeak" placeholder="e.g. 1.4" step="0.1" min="0" max="10">
+            <input type="number" name="oldpeak" placeholder="e.g. 1.4" step="0.1">
             <div class="inp-unit">mm</div>
           </div>
         </div>
@@ -648,7 +649,7 @@
             <span class="inp-tooltip">0 if male</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="pregnancies" placeholder="e.g. 2" min="0" max="20" value="0">
+            <input type="number" name="pregnancies" placeholder="e.g. 2" value="0">
             <div class="inp-unit">count</div>
           </div>
         </div>
@@ -659,7 +660,7 @@
             <span class="inp-tooltip">Normal: 70–99</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="glucose" placeholder="e.g. 110" min="40" max="300">
+            <input type="number" name="glucose" placeholder="e.g. 110">
             <div class="inp-unit">mg/dL</div>
           </div>
         </div>
@@ -670,7 +671,7 @@
             <span class="inp-tooltip">Normal: &lt;80</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="blood_pressure" placeholder="e.g. 72" min="30" max="130">
+            <input type="number" name="blood_pressure" placeholder="e.g. 72">
             <div class="inp-unit">mmHg</div>
           </div>
         </div>
@@ -681,7 +682,7 @@
             <span class="inp-tooltip">tricep fold</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="skin_thickness" placeholder="e.g. 20" min="0" max="100">
+            <input type="number" name="skin_thickness" placeholder="e.g. 20">
             <div class="inp-unit">mm</div>
           </div>
         </div>
@@ -692,7 +693,7 @@
             <span class="inp-tooltip">Normal: 16–166</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="insulin" placeholder="e.g. 85" min="0" max="900">
+            <input type="number" name="insulin" placeholder="e.g. 85">
             <div class="inp-unit">mu U/ml</div>
           </div>
         </div>
@@ -703,7 +704,7 @@
             <span class="inp-tooltip">Normal: 18.5–24.9</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="bmi_val" placeholder="e.g. 27.5" step="0.1" min="10" max="70"
+            <input type="number" name="bmi_val" placeholder="e.g. 27.5" step="0.1"
                    value="{{ details.weight / ((details.height/100) * (details.height/100)) | round(1) if details and details.weight and details.height else '' }}">
             <div class="inp-unit">kg/m²</div>
           </div>
@@ -715,7 +716,7 @@
             <span class="inp-tooltip">family history score</span>
           </div>
           <div class="inp-with-unit">
-            <input type="number" name="dpf" placeholder="e.g. 0.45" step="0.01" min="0.08" max="2.5">
+            <input type="number" name="dpf" placeholder="e.g. 0.45" step="0.01">
             <div class="inp-unit">DPF</div>
           </div>
         </div>
@@ -1079,6 +1080,7 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   btn.classList.add('active');
+  document.getElementById('active-tab-input').value = name;
 }
 
 function switchTabByName(name) {

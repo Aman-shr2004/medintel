@@ -309,12 +309,17 @@ def prediction():
             ff("skin_thickness",20.0), ff("insulin",80.0),
             ff("bmi_val",25.0), ff("dpf",0.5), fi("age",40)
         ]
+        active_tab = f.get("active_tab", "heart")
         heart_risk = heart_prob = 0
-        if heart_model:
+        diabetes_risk = diabetes_prob = 0
+
+        # Only run heart model if heart or both tab is active
+        if active_tab in ("heart", "both") and heart_model:
             heart_risk = int(heart_model.predict([heart_features])[0])
             heart_prob = round(heart_model.predict_proba([heart_features])[0][1] * 100, 1)
-        diabetes_risk = diabetes_prob = 0
-        if diabetes_model and diabetes_scaler:
+
+        # Only run diabetes model if diabetes or both tab is active
+        if active_tab in ("diabetes", "both") and diabetes_model and diabetes_scaler:
             df_scaled     = diabetes_scaler.transform([diabetes_features])
             diabetes_risk = int(diabetes_model.predict(df_scaled)[0])
             diabetes_prob = round(diabetes_model.predict_proba(df_scaled)[0][1] * 100, 1)
