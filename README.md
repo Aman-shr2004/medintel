@@ -100,3 +100,16 @@ medintel/
 - Prescription Management
 - Emergency Alert System
 - Role-Based Access Control
+
+## Project Documentation
+
+📄 [Download Full Project Report](docs/MedIntel_Project_Report.pdf)
+
+## Included in Report
+
+- System Architecture
+- Database Design
+- Screenshots
+- Workflow
+- ML Model Details
+- Future Scope
