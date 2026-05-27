@@ -103,7 +103,7 @@ medintel/
 
 ## Project Documentation
 
-📄 [Download Full Project Report](./report/MedIntel_Project_Report.pdf)
+📄 [Download Full Project Report](./report/MedIntel_Project.pdf)
 
 ## Included in Report
 
