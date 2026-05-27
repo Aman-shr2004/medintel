@@ -58,3 +58,45 @@ medintel/
 4. `app.py` – `if not user:` block was broken after a bad edit
 5. `app.py` – `load_model()` now falls back to root directory for `.pkl` files
 6. `app.py` – All deprecated `User.query.get()` calls updated to `db.session.get()`
+
+## Tech Stack
+
+### Frontend
+- HTML
+- CSS
+- JavaScript
+- Jinja2
+
+### Backend
+- Flask
+- Python
+
+### Database
+- PostgreSQL
+- SQLAlchemy ORM
+
+### AI/ML
+- Scikit-learn
+- Random Forest
+- Logistic Regression
+- Groq API
+
+## Future Scope
+
+- Real-time hospital integration
+- Mobile application support
+- Multi-language chatbot
+- Cloud auto-scaling
+- Advanced disease prediction
+
+## Features
+
+- AI Health Score System
+- Heart Disease Prediction
+- Diabetes Prediction
+- Google OAuth Login
+- AI Health Chatbot
+- Doctor Appointment Booking
+- Prescription Management
+- Emergency Alert System
+- Role-Based Access Control
