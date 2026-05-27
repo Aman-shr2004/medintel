@@ -36,7 +36,7 @@ with app.app_context():
     db.create_all()
     from models import User
     try:
-        ADMIN_EMAIL = "amanshr2004@gmail.com"
+        ADMIN_EMAIL = "sharma.aman.don@gmail.com"
 
         # Delete old admin@medintel.com if exists
         old_admin = User.query.filter_by(email="admin@medintel.com").first()
